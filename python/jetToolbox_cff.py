@@ -561,7 +561,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					explicitJTA = True,  # needed for subjet b tagging
 					svClustering = True, # needed for subjet b tagging
 					fatJets=cms.InputTag(jetalgo+'PFJets'+PUMethod),             # needed for subjet flavor clustering
-					groomedFatJets=cms.InputTag('CMSTopTag'+PUMethod), # needed for subjet flavor clustering
+					groomedFatJets=cms.InputTag('patJetsCMSTopTag'+PUMethod), # needed for subjet flavor clustering
 					)
 
 			getattr(proc,'patJetPartonMatchCMSTopTag'+PUMethod+'Subjets').matched = cms.InputTag( genParticlesLabel ) #'prunedGenParticles')
