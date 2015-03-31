@@ -12,7 +12,7 @@ scram b -j 18
 ```
 To test the toolbox:
 ```
-cmsRun cmsjet/JetToolbox/test/jetToolbox_cfg.py
+cmsRun JMEAnalysis/JetToolbox/test/jetToolbox_cfg.py
 ```
 In that python file you also can see a basic example on how to use the toolbox.
 
