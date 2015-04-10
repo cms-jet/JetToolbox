@@ -205,7 +205,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		jetSeq += getattr(proc, 'softKiller' )
 		jetSeq += getattr(proc, jetalgo+'PFJetsSK' )
 	
-	else: 
+	elif 'CHS' in PUMethod: 
 		setattr( proc, jetalgo+'PFJetsCHS', 
 				ak4PFJetsCHS.clone( 
 					doAreaFastjet = True, 
@@ -213,7 +213,15 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetAlgorithm = algorithm ) ) 
 		if miniAOD: getattr( proc, jetalgo+'PFJetsCHS').src = 'chs'
 		jetSeq += getattr(proc, jetalgo+'PFJetsCHS' )
-		#elemToKeep += [ 'keep *_'+jetalgo+'PFJetsCHS_*_*' ]
+	else: 
+		PUMethod = ''
+		setattr( proc, jetalgo+'PFJets', 
+				ak4PFJets.clone( 
+					doAreaFastjet = True, 
+					rParam = jetSize, 
+					jetAlgorithm = algorithm ) ) 
+		if miniAOD: getattr( proc, jetalgo+'PFJets').src = 'packedPFCandidates'
+		jetSeq += getattr(proc, jetalgo+'PFJets' )
 
 	if miniAOD: setattr( proc, jetalgo+'PFJets'+PUMethod+'Constituents', cms.EDFilter("MiniAODJetConstituentSelector", src = cms.InputTag( jetalgo+'PFJets'+PUMethod ), cut = cms.string( Cut ) ))
 	else: setattr( proc, jetalgo+'PFJets'+PUMethod+'Constituents', cms.EDFilter("PFJetConstituentSelector", src = cms.InputTag( jetalgo+'PFJets'+PUMethod ), cut = cms.string( Cut ) ))
