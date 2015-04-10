@@ -216,7 +216,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					doAreaFastjet = True, 
 					rParam = jetSize, 
 					jetAlgorithm = algorithm ) ) 
-		if miniAOD: getattr( proc, jetalgo+'PFJets').src = 'chs'
+		if miniAOD: getattr( proc, jetalgo+'PFJets').src = 'packedPFCandidates'
 		jetSeq += getattr(proc, jetalgo+'PFJets' )
 
 	#if miniAOD: setattr( proc, jetalgo+'PFJets'+PUMethod+'Constituents', cms.EDFilter("MiniAODJetConstituentSelector", src = cms.InputTag( jetalgo+'PFJets'+PUMethod ), cut = cms.string( 'pt > 100.0 ' ) ))
