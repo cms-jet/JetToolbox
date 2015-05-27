@@ -680,7 +680,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                                  pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
                                                     vertexes = cms.InputTag('offlineSlimmedPrimaryVertices') ) )
                 else:
-                        setattr( proc, 'pileupJetId',
+                        setattr( proc, 'pileupJetId'+jetALGO+'PF'+PUMethod,
                                  pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
                                                     vertexes = cms.InputTag('offlinePrimaryVertices') ) )
 
