@@ -34,7 +34,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addCMSTopTagger=False,
 		addMassDrop=False,
 		addHEPTopTagger=False,
-		addNsub=False, maxTau=4, 
+		addNsub=False, maxTau=4,
+		addPileUpJetId=True,
 		addQJets=False 
 		):
 	
@@ -670,6 +671,25 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			jetSeq += getattr(proc, 'QGTagger' )
 		else:
 			'QGTagger is optimized for ak4 jets.'
+
+
+	if addPileUpJetId:
+                from PhysicsTools.PatAlgos.slimming.pileupJetId_cfi import pileupJetId
+                if miniAOD:
+                        setattr( proc, 'pileupJetId'+jetALGO+'PF'+PUMethod,
+                                 pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
+                                                    vertexes = cms.InputTag('offlineSlimmedPrimaryVertices') ) )
+                else:
+                        setattr( proc, 'pileupJetId',
+                                 pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
+                                                    vertexes = cms.InputTag('offlinePrimaryVertices') ) )
+
+                elemToKeep += [ 'keep *_pileupJetId'+jetALGO+'PF'+PUMethod+'_*_*' ]
+
+                jetSeq += getattr(proc, 'pileupJetId'+jetALGO+'PF'+PUMethod )
+                toolsUsed.append( 'pileupJetId'+jetALGO+'PF'+PUMethod )
+
+
 
 	setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod, selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod, cut = Cut ) )
 	elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_*_*' ]
