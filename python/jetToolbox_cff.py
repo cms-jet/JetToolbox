@@ -35,7 +35,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addMassDrop=False,
 		addHEPTopTagger=False,
 		addNsub=False, maxTau=4,
-		addPileUpJetId=True,
+		addPUJetID=True,
 		addQJets=False 
 		):
 	
@@ -672,24 +672,24 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		else:
 			'QGTagger is optimized for ak4 jets.'
 
+			
+	####### Pileup JetID
+        if addPUJetID:
+                if 'ak4' in jetalgo:
+                        proc.load('RecoJets.JetProducers.pileupjetidproducer_cfi')
+                        proc.pileupJetIdCalculator.jets = cms.InputTag(jetalgo+'PFJets'+PUMethod)
+                        proc.pileupJetIdEvaluator.jets = cms.InputTag(jetalgo+'PFJets'+PUMethod)
+                        proc.pileupJetIdCalculator.rho = cms.InputTag("fixedGridRhoFastjetAll")
+                        proc.pileupJetIdEvaluator.rho = cms.InputTag("fixedGridRhoFastjetAll")
+                        proc.pileupJetIdCalculator.vertexes = cms.InputTag(pvLabel)
+                        proc.pileupJetIdEvaluator.vertexes = cms.InputTag(pvLabel)
 
-	if addPileUpJetId:
-		from PhysicsTools.PatAlgos.slimming.pileupJetId_cfi import pileupJetId
-		if miniAOD:
-			setattr( proc, 'pileupJetId'+jetALGO+'PF'+PUMethod,
-				 pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
-						    vertexes = cms.InputTag('offlineSlimmedPrimaryVertices'),
-						    rho = cms.InputTag('fixedGridRhoFastjetAll') ) )
+                        getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['pileupJetIdEvaluator:fullDiscriminant']
+                        getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userInts.src += ['pileupJetIdEvaluator:cutbasedId','pileupJetIdEvaluator:fullId']
+                        elemToKeep += ['keep *_pileupJetIdEvaluator_*_*']
+                        toolsUsed.append( 'pileupJetIdEvaluator' )
 		else:
-			setattr( proc, 'pileupJetId'+jetALGO+'PF'+PUMethod,
-				 pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
-						    vertexes = cms.InputTag('offlinePrimaryVertices'),
-						    rho = cms.InputTag('fixedGridRhoFastjetAll') ) )
-			
-		elemToKeep += [ 'keep *_pileupJetId'+jetALGO+'PF'+PUMethod+'_*_*' ]
-			
-		jetSeq += getattr(proc, 'pileupJetId'+jetALGO+'PF'+PUMethod )
-		toolsUsed.append( 'pileupJetId'+jetALGO+'PF'+PUMethod )
+                        'PUJetID is optimized for ak4 jets.'
 	
 
 
