@@ -674,21 +674,23 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 
 	if addPileUpJetId:
-                from PhysicsTools.PatAlgos.slimming.pileupJetId_cfi import pileupJetId
-                if miniAOD:
-                        setattr( proc, 'pileupJetId'+jetALGO+'PF'+PUMethod,
-                                 pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
-                                                    vertexes = cms.InputTag('offlineSlimmedPrimaryVertices') ) )
-                else:
-                        setattr( proc, 'pileupJetId'+jetALGO+'PF'+PUMethod,
-                                 pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
-                                                    vertexes = cms.InputTag('offlinePrimaryVertices') ) )
-
-                elemToKeep += [ 'keep *_pileupJetId'+jetALGO+'PF'+PUMethod+'_*_*' ]
-
-                jetSeq += getattr(proc, 'pileupJetId'+jetALGO+'PF'+PUMethod )
-                toolsUsed.append( 'pileupJetId'+jetALGO+'PF'+PUMethod )
-
+		from PhysicsTools.PatAlgos.slimming.pileupJetId_cfi import pileupJetId
+		if miniAOD:
+			setattr( proc, 'pileupJetId'+jetALGO+'PF'+PUMethod,
+				 pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
+						    vertexes = cms.InputTag('offlineSlimmedPrimaryVertices'),
+						    rho = cms.InputTag('fixedGridRhoFastjetAll') ) )
+		else:
+			setattr( proc, 'pileupJetId'+jetALGO+'PF'+PUMethod,
+				 pileupJetId.clone( jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
+						    vertexes = cms.InputTag('offlinePrimaryVertices'),
+						    rho = cms.InputTag('fixedGridRhoFastjetAll') ) )
+			
+		elemToKeep += [ 'keep *_pileupJetId'+jetALGO+'PF'+PUMethod+'_*_*' ]
+			
+		jetSeq += getattr(proc, 'pileupJetId'+jetALGO+'PF'+PUMethod )
+		toolsUsed.append( 'pileupJetId'+jetALGO+'PF'+PUMethod )
+	
 
 
 	setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod, selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod, cut = Cut ) )
