@@ -34,7 +34,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addCMSTopTagger=False,
 		addMassDrop=False,
 		addHEPTopTagger=False,
-		addNsub=False, maxTau=4, 
+		addNsub=False, maxTau=4,
+		addPUJetID=True,
 		addQJets=False 
 		):
 	
@@ -670,6 +671,27 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			jetSeq += getattr(proc, 'QGTagger' )
 		else:
 			'QGTagger is optimized for ak4 jets.'
+
+			
+	####### Pileup JetID
+        if addPUJetID:
+                if 'ak4' in jetalgo:
+                        proc.load('RecoJets.JetProducers.pileupjetidproducer_cfi')
+                        proc.pileupJetIdCalculator.jets = cms.InputTag(jetalgo+'PFJets'+PUMethod)
+                        proc.pileupJetIdEvaluator.jets = cms.InputTag(jetalgo+'PFJets'+PUMethod)
+                        proc.pileupJetIdCalculator.rho = cms.InputTag("fixedGridRhoFastjetAll")
+                        proc.pileupJetIdEvaluator.rho = cms.InputTag("fixedGridRhoFastjetAll")
+                        proc.pileupJetIdCalculator.vertexes = cms.InputTag(pvLabel)
+                        proc.pileupJetIdEvaluator.vertexes = cms.InputTag(pvLabel)
+
+                        getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['pileupJetIdEvaluator:fullDiscriminant']
+                        getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userInts.src += ['pileupJetIdEvaluator:cutbasedId','pileupJetIdEvaluator:fullId']
+                        elemToKeep += ['keep *_pileupJetIdEvaluator_*_*']
+                        toolsUsed.append( 'pileupJetIdEvaluator' )
+		else:
+                        'PUJetID is optimized for ak4 jets.'
+	
+
 
 	setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod, selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod, cut = Cut ) )
 	elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_*_*' ]
