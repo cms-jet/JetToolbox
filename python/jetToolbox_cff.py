@@ -27,6 +27,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		subJETCorrPayload='None', subJETCorrLevels = [ 'None' ],
 		miniAOD=True,
 		Cut = '', 
+		CutSubjet = '', 
 		addPruning=False, zCut=0.1, rCut=0.5, addPrunedSubjets=False,
 		addSoftDrop=False, betaCut=0.0,  zCutSD=0.1, addSoftDropSubjets=False,
 		addTrimming=False, rFiltTrim=0.2, ptFrac=0.03,
@@ -339,7 +340,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				    getattr(proc,'pfInclusiveSecondaryVertexFinderTagInfos'+jetALGO+'PF'+PUMethod+'SoftDropSubjets').extSVCollection = cms.InputTag( svLabel ) #'slimmedSecondaryVertices')
 			getattr(proc,'patJetCorrFactors'+jetALGO+'PF'+PUMethod+'SoftDropSubjets' ).primaryVertices = pvLabel  #'offlineSlimmedPrimaryVertices' 
 			getattr(proc,'patJetPartonMatch'+jetALGO+'PF'+PUMethod+'SoftDropSubjets').matched = cms.InputTag( genParticlesLabel ) #'prunedGenParticles')
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', cut = Cut ) )
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', cut = CutSubjet ) )
 
 			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked', 
@@ -430,7 +431,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			if miniAOD:
 				getattr( proc,'patJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets').addAssociatedTracks = cms.bool(False) # needs to be disabled since there is no track collection present in MiniAOD
 				getattr( proc,'patJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets').addJetCharge = cms.bool(False)        # needs to be disabled since there is no track collection present in MiniAOD
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', cut = Cut ) )
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', cut = CutSubjet ) )
 
 			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedPacked', 
@@ -575,7 +576,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			getattr(proc,'patJetCorrFactorsCMSTopTag'+PUMethod+'Subjets' ).primaryVertices = pvLabel  #'offlineSlimmedPrimaryVertices' 
 			getattr(proc,'patJetsCMSTopTag'+PUMethod+'Subjets').addAssociatedTracks = cms.bool(False) # needs to be disabled since there is no track collection present in MiniAOD
 			getattr(proc,'patJetsCMSTopTag'+PUMethod+'Subjets').addJetCharge = cms.bool(False)        # needs to be disabled since there is no track collection present in MiniAOD
-			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+'Subjets', selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod+'Subjets', cut = Cut ) )
+			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+'Subjets', selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod+'Subjets', cut = CutSubjet ) )
 
 			setattr( proc, 'patJetsCMSTopTag'+PUMethod+'Packed', 
 					cms.EDProducer("BoostedJetMerger",
