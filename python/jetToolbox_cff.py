@@ -36,7 +36,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addMassDrop=False,
 		addHEPTopTagger=False,
 		addNsub=False, maxTau=4,
-		addPUJetID=True,
+		addPUJetID=False,
 		addQJets=False 
 		):
 	
