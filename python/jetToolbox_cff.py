@@ -587,7 +587,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			elemToKeep += [ 'keep *_patJetsCMSTopTag'+PUMethod+'Packed_*_*' ]
 			toolsUsed.append( 'patJetsCMSTopTag'+PUMethod+'Packed' )
 
-		else: print '|----- CMS recommends CambridgeAachen for CMS Top Tagger, you are using '+algorithm+'. JetToolbox will not run CMS Top Tagger.'
+		else: print '|---- jetToolBox: CMS recommends CambridgeAachen for CMS Top Tagger, you are using '+algorithm+'. JetToolbox will not run CMS Top Tagger.'
 
 	if addMassDrop :
 
@@ -603,7 +603,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+'MassDropFilteredMass' ]
 			jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'MassDropFiltered' )
 			jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'MassDropFilteredMass' )
-		else: print '|----- CMS recommends CambridgeAachen for Mass Drop, you are using '+algorithm+'. JetToolbox will not run Mass Drop.'
+		else: print '|---- jetToolBox: CMS recommends CambridgeAachen for Mass Drop, you are using '+algorithm+'. JetToolbox will not run Mass Drop.'
 		toolsUsed.append( jetalgo+'PFJets'+PUMethod+'MassDropFilteredMass' )
 
 	if addHEPTopTagger: 
@@ -617,7 +617,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			jetSeq += getattr(proc, 'hepTopTagPFJets'+PUMethod )
 			jetSeq += getattr(proc, 'hepTopTagPFJets'+PUMethod+'Mass'+jetALGO )
 			toolsUsed.append( 'hepTopTagPFJets'+PUMethod+'Mass'+jetALGO )
-		else: print '|----- CMS recommends CambridgeAachen for HEPTopTagger, you are using '+algorithm+', and a jet cone size bigger than 1. JetToolbox will not run HEP TopTagger.'
+		else: print '|---- jetToolBox: CMS recommends CambridgeAachen for HEPTopTagger, you are using '+algorithm+', and a jet cone size bigger than 1. JetToolbox will not run HEP TopTagger.'
 
 	####### Nsubjettiness
 	if addNsub:
@@ -671,12 +671,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['QJetsAdder'+jetALGO+':qgLikelihood']  
 			jetSeq += getattr(proc, 'QGTagger' )
 		else:
-			'QGTagger is optimized for ak4 jets.'
+			print '|---- jetToolBox: QGTagger is optimized for ak4 jets.'
 
 			
 	####### Pileup JetID
         if addPUJetID:
-                if 'ak4' in jetalgo:
+                if ( 'ak4' in jetalgo ) and ( 'CHS' in PUMethod ):
                         from RecoJets.JetProducers.pileupjetidproducer_cfi import *
 
 			setattr( proc, jetALGO+'PF'+PUMethod+'pileupJetIdCalculator',
@@ -700,7 +700,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                         elemToKeep += ['keep *_'+jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator_*_*']
                         toolsUsed.append( jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator' )
 		else:
-                        'PUJetID is optimized for ak4 jets.'
+                        print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS.'
 	
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
