@@ -24,6 +24,7 @@ from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection
 def jetToolbox( proc, jetType, jetSequence, outputFile, 
         PUMethod='CHS',                    #### Options: Puppi, CS, SK
         miniAOD=True,
+        runOnMC=True,
         JETCorrPayload='None', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
         Cut = '', 
         subJETCorrPayload='None', subJETCorrLevels = [ 'None' ], GetSubjetMCFlavour=False,
@@ -39,6 +40,11 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
         addPUJetID=False,
         addQJets=False 
         ):
+
+    runOnData = not runOnMC
+    if runOnData:
+        GetJetMCFlavour = False
+        GetSubjetMCFlavour = False
     
     ###############################################################################
     #######  Verifying some inputs and defining variables
@@ -48,6 +54,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
     recommendedJetAlgos = [ 'ak4', 'ak8', 'ca4', 'ca8', 'ca10' ]
     payloadList = [ 'AK1PFchs', 'AK2PFchs', 'AK3PFchs', 'AK4PFchs', 'AK5PFchs', 'AK6PFchs', 'AK7PFchs', 'AK8PFchs', 'AK9PFchs', 'AK10PFchs' ]
     JECLevels = [ 'L1Offset', 'L1FastJet', 'L1JPTOffset', 'L2Relative', 'L3Absolute', 'L5Falvour', 'L7Parton' ]
+    if runOnData:
+        JECLevels += ['L2L3Residual']
     jetAlgo = ''
     algorithm = ''
     size = ''
@@ -117,19 +125,20 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
         jetSeq += getattr(proc, 'chs')
 
 
-        ## Filter out neutrinos from packed GenParticles
-        setattr( proc, 'packedGenParticlesForJetsNoNu', 
-                cms.EDFilter("CandPtrSelector", 
-                    src = cms.InputTag("packedGenParticles"), 
-                    cut = cms.string("abs(pdgId) != 12 && abs(pdgId) != 14 && abs(pdgId) != 16")
-                    ))
-        jetSeq += getattr(proc, 'packedGenParticlesForJetsNoNu' )
-            
-        setattr( proc, jetalgo+'GenJetsNoNu', 
-                ak4GenJets.clone( src = 'packedGenParticlesForJetsNoNu', 
-                    rParam = jetSize, 
-                    jetAlgorithm = algorithm ) ) 
-        jetSeq += getattr(proc, jetalgo+'GenJetsNoNu' )
+        if runOnMC:
+            ## Filter out neutrinos from packed GenParticles
+            setattr( proc, 'packedGenParticlesForJetsNoNu', 
+                    cms.EDFilter("CandPtrSelector", 
+                        src = cms.InputTag("packedGenParticles"), 
+                        cut = cms.string("abs(pdgId) != 12 && abs(pdgId) != 14 && abs(pdgId) != 16")
+                        ))
+            jetSeq += getattr(proc, 'packedGenParticlesForJetsNoNu' )
+                
+            setattr( proc, jetalgo+'GenJetsNoNu', 
+                    ak4GenJets.clone( src = 'packedGenParticlesForJetsNoNu', 
+                        rParam = jetSize, 
+                        jetAlgorithm = algorithm ) ) 
+            jetSeq += getattr(proc, jetalgo+'GenJetsNoNu' )
 
         #for Inclusive Vertex Finder
         proc.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
@@ -144,10 +153,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
         pfCand = 'particleFlow'
         svLabel = 'inclusiveSecondaryVertices'
 
-        proc.load('RecoJets.Configuration.GenJetParticles_cff')
         proc.load('CommonTools.ParticleFlow.pfNoPileUpJME_cff')
-        setattr( proc, jetalgo+'GenJetsNoNu', ak4GenJets.clone( src = 'genParticlesForJetsNoNu', rParam = jetSize, jetAlgorithm = algorithm ) ) 
-        jetSeq += getattr(proc, jetalgo+'GenJetsNoNu' )
+        if runOnMC:
+            proc.load('RecoJets.Configuration.GenJetParticles_cff')
+            setattr( proc, jetalgo+'GenJetsNoNu', ak4GenJets.clone( src = 'genParticlesForJetsNoNu', rParam = jetSize, jetAlgorithm = algorithm ) ) 
+            jetSeq += getattr(proc, jetalgo+'GenJetsNoNu' )
+
         setattr( proc, jetalgo+'PFJetsCHS', ak4PFJets.clone( rParam = jetSize, jetAlgorithm = algorithm ) ) 
         jetSeq += getattr(proc, jetalgo+'PFJetsCHS' )
         
@@ -377,16 +388,17 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
         toolsUsed.append( jetalgo+'PFJets'+PUMethod+'PrunedMass' )
 
         if addPrunedSubjets:
-            setattr( proc, jetalgo+'GenJetsNoNuPruned',
-                    ak4GenJets.clone(
-                        SubJetParameters,
-                        rParam = jetSize,
-                        usePruning = cms.bool(True),
-                        writeCompound = cms.bool(True),
-                        jetCollInstanceName=cms.string('SubJets')
-                        ))
-            if miniAOD: getattr( proc, jetalgo+'GenJetsNoNuPruned' ).src = 'packedGenParticlesForJetsNoNu'
-            jetSeq += getattr(proc, jetalgo+'GenJetsNoNuPruned' )
+            if runOnMC:
+                setattr( proc, jetalgo+'GenJetsNoNuPruned',
+                        ak4GenJets.clone(
+                            SubJetParameters,
+                            rParam = jetSize,
+                            usePruning = cms.bool(True),
+                            writeCompound = cms.bool(True),
+                            jetCollInstanceName=cms.string('SubJets')
+                            ))
+                if miniAOD: getattr( proc, jetalgo+'GenJetsNoNuPruned' ).src = 'packedGenParticlesForJetsNoNu'
+                jetSeq += getattr(proc, jetalgo+'GenJetsNoNuPruned' )
 
             addJetCollection(
                     proc,
@@ -676,8 +688,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
             
     ####### Pileup JetID
         if addPUJetID:
-                if ( 'ak4' in jetalgo ) and ( 'CHS' in PUMethod ):
-                        from RecoJets.JetProducers.pileupjetidproducer_cfi import *
+            if ( 'ak4' in jetalgo ) and ( 'CHS' in PUMethod ):
+                from RecoJets.JetProducers.pileupjetidproducer_cfi import *
 
             setattr( proc, jetALGO+'PF'+PUMethod+'pileupJetIdCalculator',
                     pileupJetIdCalculator.clone(
@@ -695,12 +707,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                         )
                     )
 
-                        getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += [jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator:fullDiscriminant']
-                        getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userInts.src += [jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator:cutbasedId',jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator:fullId']
-                        elemToKeep += ['keep *_'+jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator_*_*']
-                        toolsUsed.append( jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator' )
+            getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += [jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator:fullDiscriminant']
+            getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userInts.src += [jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator:cutbasedId',jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator:fullId']
+            elemToKeep += ['keep *_'+jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator_*_*']
+            toolsUsed.append( jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator' )
         else:
-                        print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS.'
+            print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS.'
     
     if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
@@ -709,6 +721,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
     elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_*_*' ]
     elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_calo*_*' ]
     elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_tagInfos_*' ]
+
+    if runOnData:
+        from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
+        removeMCMatching(proc, names=['Jets'], outputModules=[])
 
     print '|---- jetToolBox: Running '+', '.join(toolsUsed)+'.'
 
