@@ -7,7 +7,7 @@ Check the branch for the correspondent release. The master branch is for *CMSSW_
 ```
 cmsrel CMSSW_7_4_1
 cd CMSSW_7_4_1/src/
-git clone https://github.com/cms-jet/JetToolbox -b jetToolbox_74X JMEAnalysis/JetToolbox
+git clone https://github.com/cms-jet/JetToolbox JMEAnalysis/JetToolbox
 scram b -j 18
 ```
 To test the toolbox:
