@@ -23,8 +23,6 @@ from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection
 
 def jetToolbox( proc, jetType, jetSequence, outputFile, 
 		PUMethod='CHS',                    #### Options: Puppi, CS, SK, Plain
-		JETCorrPayload='None', JETCorrLevels = [ 'None' ],
-		subJETCorrPayload='None', subJETCorrLevels = [ 'None' ],
 		miniAOD=True,
 		JETCorrPayload='None', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
 		Cut = '', 
@@ -273,6 +271,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		setattr( proc, jetalgo+'PFJets'+PUMethod+'SoftDrop', 
 			ak8PFJetsCHSSoftDrop.clone( 
+				src = cms.InputTag( jetalgo+'PFJets'+PUMethod+'Constituents' ),
 				rParam = jetSize, 
 				jetAlgorithm = algorithm, 
 				useExplicitGhosts=True,
