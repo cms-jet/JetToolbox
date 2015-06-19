@@ -3,7 +3,7 @@ Python framework for configuration of jet tools via the jet toolbox.
 
 ## Instructions
 
-Check the branch for the correspondent release. This branch (jetToolbox_74X) is for *CMSSW_7_4_X*, then for example:
+Check the branch for the correspondent release. The master branch is for *CMSSW_7_4_X*, then for example:
 ```
 cmsrel CMSSW_7_4_1
 cd CMSSW_7_4_1/src/
