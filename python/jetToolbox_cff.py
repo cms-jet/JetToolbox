@@ -236,14 +236,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger:
 		if subJETCorrPayload not in payloadList:
 			if not set(subJETCorrLevels).issubset(set(JECLevels)) :
-				if 'CHS' in PUMethod: subJEC = ( 'AK'+size+'PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
-				elif 'Plain' in PUMethod: subJEC = ( 'AK'+size+'PF', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
+				if 'CHS' in PUMethod: subJEC = ( 'AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
+				elif 'Plain' in PUMethod: subJEC = ( 'AK4PF', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
 				else: subJEC = None
 				if 'None' in subJETCorrPayload: print '|---- jetToolBox: No subJEC provided, jetToolbox is using the recommended corrections for this PU method: '+str(subJEC)
 				else: print '|---- jetToolBox: subJEC payload provided ("'+subJETCorrPayload+'") is wrong, jetToolbox is using the recommended corrections for this PU method: '+str(subJEC)
 			else:
-				if 'CHS' in PUMethod: subJEC = ( 'AK'+size+'PFchs', subJETCorrLevels, 'None' )
-				elif 'Plain' in PUMethod: subJEC = ( 'AK'+size+'PF', subJETCorrLevels, 'None' )
+				if 'CHS' in PUMethod: subJEC = ( 'AK4PFchs', subJETCorrLevels, 'None' )
+				elif 'Plain' in PUMethod: subJEC = ( 'AK4PF', subJETCorrLevels, 'None' )
 				else: subJEC = None
 				if 'None' in subJETCorrPayload: print '|---- jetToolBox: No subJEC payload provided, jetToolbox is using the recommended payload. Using subJEC: '+str(subJEC)
 				else: print '|---- jetToolBox: subJEC payload provided ("'+subJETCorrPayload+'") is wrong, jetToolbox is using the recommended corrections for this PU method: '+str(subJEC)
