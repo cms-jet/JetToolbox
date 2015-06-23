@@ -699,7 +699,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			proc.QGTagger.srcJets = cms.InputTag(jetalgo+'PFJets'+PUMethod)    # Could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD)
 			proc.QGTagger.jetsLabel = cms.string('QGL_AK4PFchs')        # Other options (might need to add an ESSource for it): see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
 			elemToKeep += [ 'keep *_QGTagger_*_*' ]
-			#getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['QJetsAdder'+jetALGO+':qgLikelihood']  
 			getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['QGTagger:qgLikelihood']  
 			jetSeq += getattr(proc, 'QGTagger' )
 		else:
