@@ -24,9 +24,9 @@ from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection
 def jetToolbox( proc, jetType, jetSequence, outputFile, 
 		PUMethod='CHS',                    #### Options: Puppi, CS, SK, Plain
 		miniAOD=True,
-		JETCorrPayload='None', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
+		JETCorrPayload='', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
 		Cut = '', 
-		subJETCorrPayload='None', subJETCorrLevels = [ 'None' ], GetSubjetMCFlavour=False,
+		subJETCorrPayload='', subJETCorrLevels = [ 'None' ], GetSubjetMCFlavour=False,
 		CutSubjet = '', 
 		addPruning=False, zCut=0.1, rCut=0.5, addPrunedSubjets=False,
 		addSoftDrop=False, betaCut=0.0,  zCutSD=0.1, addSoftDropSubjets=False,
@@ -37,7 +37,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addHEPTopTagger=False,
 		addNsub=False, maxTau=4,
 		addPUJetID=False,
-		addQJets=False 
+		addQJets=False,
+		addQGTagger=False, QGjetsLabel='chs'
 		):
 	
 	###############################################################################
@@ -46,9 +47,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	print '|---- jetToolbox: Initialyzing collection...'
 	supportedJetAlgos = { 'ak': 'AntiKt', 'ca' : 'CambridgeAachen', 'kt' : 'Kt' }
 	recommendedJetAlgos = [ 'ak4', 'ak8', 'ca4', 'ca8', 'ca10' ]
-	payloadList = [ 'AK1PFchs', 'AK2PFchs', 'AK3PFchs', 'AK4PFchs', 'AK5PFchs', 'AK6PFchs', 'AK7PFchs', 'AK8PFchs', 'AK9PFchs', 'AK10PFchs',
-			'AK1PFPUPPI', 'AK2PFPUPPI', 'AK3PFPUPPI', 'AK4PFPUPPI', 'AK5PFPUPPI', 'AK6PFPUPPI', 'AK7PFPUPPI', 'AK8PFPUPPI', 'AK9PFPUPPI', 'AK10PFPUPPI', 
-			'AK1PFSK', 'AK2PFSK', 'AK3PFSK', 'AK4PFSK', 'AK5PFSK', 'AK6PFSK', 'AK7PFSK', 'AK8PFSK', 'AK9PFSK', 'AK10PFSK', 
+	payloadList = [ 'None',
+			'AK1PFchs', 'AK2PFchs', 'AK3PFchs', 'AK4PFchs', 'AK5PFchs', 'AK6PFchs', 'AK7PFchs', 'AK8PFchs', 'AK9PFchs', 'AK10PFchs',
+			'AK1PFPUPPI', 'AK2PFPUPPI', 'AK3PFPUPPI', 'AK4PFPUPPI', 'AK5PFPUPPI', 'AK6PFPUPPI', 'AK7PFPUPPI', 'AK8PFPUPPI', 'AK9PFPUPPI', 'AK10PFPUPPI',  
+			'AK1PFSK', 'AK2PFSK', 'AK3PFSK', 'AK4PFSK', 'AK5PFSK', 'AK6PFSK', 'AK7PFSK', 'AK8PFSK', 'AK9PFSK', 'AK10PFSK',  
 			'AK1PF', 'AK2PF', 'AK3PF', 'AK4PF', 'AK5PF', 'AK6PF', 'AK7PF', 'AK8PF', 'AK9PF', 'AK10PF' ]
 	JECLevels = [ 'L1Offset', 'L1FastJet', 'L1JPTOffset', 'L2Relative', 'L3Absolute', 'L5Falvour', 'L7Parton' ]
 	jetAlgo = ''
@@ -144,6 +146,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			#'pfCombinedMVABJetTags'
 	    ]
 
+	### Jet Corrections
+	if not set(JETCorrLevels).issubset(set(JECLevels)): 
+		if ( 'CHS' in PUMethod ) or  ( 'Plain' in PUMethod ): JETCorrLevels = ['L1FastJet','L2Relative', 'L3Absolute']
+		else: JETCorrLevels = [ 'L2Relative', 'L3Absolute']
+	if not set(subJETCorrLevels).issubset(set(JECLevels)): 
+		if ( 'CHS' in PUMethod ) or  ( 'Plain' in PUMethod ): subJETCorrLevels = ['L1FastJet','L2Relative', 'L3Absolute']
+		else: subJETCorrLevels = [ 'L2Relative', 'L3Absolute']
+
 	####  Creating PATjets
 	if 'Puppi' in PUMethod:
 
@@ -158,6 +168,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
 		jetSeq += getattr(proc, 'puppi' )
 		jetSeq += getattr(proc, jetalgo+'PFJetsPuppi' )
+		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFPUPPI'
+		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFPUPPI'
 
 	elif 'CS' in PUMethod:
 
@@ -173,6 +185,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		#setattr( proc, jetalgo+'PFJetsCSConstituents', ak8PFJetsCSConstituents.clone( src = cms.InputTag(jetalgo+'PFJetsCS') ) )
 		jetSeq += getattr(proc, jetalgo+'PFJetsCS' )
+		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFCS'
+		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFCS'
 
 	elif 'SK' in PUMethod:
 
@@ -184,6 +198,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if miniAOD: getattr( proc, 'softKiller' ).PFCandidates = cms.InputTag('packedPFCandidates')
 		jetSeq += getattr(proc, 'softKiller' )
 		jetSeq += getattr(proc, jetalgo+'PFJetsSK' )
+		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFSK'
+		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFSK'
 	
 	elif 'CHS' in PUMethod: 
 		setattr( proc, jetalgo+'PFJetsCHS', 
@@ -193,7 +209,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetAlgorithm = algorithm ) ) 
 		if miniAOD: getattr( proc, jetalgo+'PFJetsCHS').src = 'chs'
 		jetSeq += getattr(proc, jetalgo+'PFJetsCHS' )
-
+		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFchs'
+		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFchs'
 
 	else: 
 		PUMethod = ''
@@ -204,57 +221,22 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetAlgorithm = algorithm ) ) 
 		if miniAOD: getattr( proc, jetalgo+'PFJets').src = 'packedPFCandidates'
 		jetSeq += getattr(proc, jetalgo+'PFJets' )
+		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PF'
+		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PF'
+
+	if 'None' in JETCorrPayload: JEC = None
+	else: JEC = ( JETCorrPayload.replace('PUPPI','chs').replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )   ### temporary
+	#else: JEC = ( JETCorrPayload., JETCorrLevels, 'None' ) 
+	print '|---- jetToolBox: Applying this corrections: '+str(JEC)
+
+	if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger:
+		if 'None' in subJETCorrPayload: subJEC = None
+		else: subJEC = ( subJETCorrPayload.replace('PUPPI','chs').replace('CS','chs').replace('SK','chs') , subJETCorrLevels, 'None' )   ### temporary
 
 
 	if miniAOD: setattr( proc, jetalgo+'PFJets'+PUMethod+'Constituents', cms.EDFilter("MiniAODJetConstituentSelector", src = cms.InputTag( jetalgo+'PFJets'+PUMethod ), cut = cms.string( Cut ) ))
 	else: setattr( proc, jetalgo+'PFJets'+PUMethod+'Constituents', cms.EDFilter("PFJetConstituentSelector", src = cms.InputTag( jetalgo+'PFJets'+PUMethod ), cut = cms.string( Cut ) ))
 	jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'Constituents' )
-
-	### Jet Corrections
-	if JETCorrPayload not in payloadList:
-		if not set(JETCorrLevels).issubset(set(JECLevels)) :
-			if 'CHS' in PUMethod: JEC = ( 'AK'+size+'PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
-			elif 'Plain' in PUMethod: JEC = ( 'AK'+size+'PF', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
-			else: JEC = None
-			if 'None' in JETCorrPayload: print '|---- jetToolBox: No JEC provided, jetToolbox is using the recommended corrections for this PU method: '+str(JEC)
-			else: print '|---- jetToolBox: JEC payload provided ("'+JETCorrPayload+'") is wrong, jetToolbox is using the recommended corrections for this PU method: '+str(JEC)
-		else:
-			if 'CHS' in PUMethod: JEC = ( 'AK'+size+'PFchs', JETCorrLevels, 'None' )
-			elif 'Plain' in PUMethod: JEC = ( 'AK'+size+'PF', JETCorrLevels, 'None' )
-			else: JEC = None
-			if 'None' in JETCorrPayload: print '|---- jetToolBox: No JEC payload provided, jetToolbox is using the recommended payload. Using JEC: '+str(JEC)
-			else: print '|---- jetToolBox: JEC payload provided ("'+JETCorrPayload+'") is wrong, jetToolbox is using the recommended corrections for this PU method: '+str(JEC)
-	else:
-		if not set(JETCorrLevels).issubset(set(JECLevels)) :
-			if ('CHS' in PUMethod) or ('Plain' in PUMethod): JEC = ( JETCorrPayload, ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
-			else: JEC = None
-			print '|---- jetToolBox: JEC levels are not provided or wrong, jetToolbox is using the recommended levels for this PU method: '+str(JEC)
-		else:
-			JEC = ( JETCorrPayload, JETCorrLevels, 'None' )
-			print '|---- jetToolBox: JEC payload and levels provided by user. Using JEC: '+str(JEC)
-
-	if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger:
-		if subJETCorrPayload not in payloadList:
-			if not set(subJETCorrLevels).issubset(set(JECLevels)) :
-				if 'CHS' in PUMethod: subJEC = ( 'AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
-				elif 'Plain' in PUMethod: subJEC = ( 'AK4PF', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
-				else: subJEC = None
-				if 'None' in subJETCorrPayload: print '|---- jetToolBox: No subJEC provided, jetToolbox is using the recommended corrections for this PU method: '+str(subJEC)
-				else: print '|---- jetToolBox: subJEC payload provided ("'+subJETCorrPayload+'") is wrong, jetToolbox is using the recommended corrections for this PU method: '+str(subJEC)
-			else:
-				if 'CHS' in PUMethod: subJEC = ( 'AK4PFchs', subJETCorrLevels, 'None' )
-				elif 'Plain' in PUMethod: subJEC = ( 'AK4PF', subJETCorrLevels, 'None' )
-				else: subJEC = None
-				if 'None' in subJETCorrPayload: print '|---- jetToolBox: No subJEC payload provided, jetToolbox is using the recommended payload. Using subJEC: '+str(subJEC)
-				else: print '|---- jetToolBox: subJEC payload provided ("'+subJETCorrPayload+'") is wrong, jetToolbox is using the recommended corrections for this PU method: '+str(subJEC)
-		else:
-			if not set(subJETCorrLevels).issubset(set(JECLevels)) :
-				if ('CHS' in PUMethod) or ('Plain' in PUMethod): subJEC = ( subJETCorrPayload, ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None' )
-				else: subJEC = None
-				print '|---- jetToolBox: subJEC levels are not provided or wrong, jetToolbox is using the recommended levels for this PU method: '+str(subJEC)
-			else:
-				subJEC = ( subJETCorrPayload, subJETCorrLevels, 'None' )
-				print '|---- jetToolBox: subJEC payload and levels provided by user. Using subJEC: '+str(subJEC)
 
 	addJetCollection(
 			proc,
@@ -674,9 +656,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		toolsUsed.append( 'Njettiness'+jetALGO+PUMethod )
 
 	###### QJetsAdder
+	'''
 	if addQJets:
-		'''
-		#This is the old way before 731
 		### there must be a better way to do this random number introduction
 		setattr( proc, 'RandomNumberGeneratorService', cms.Service("RandomNumberGeneratorService", 
 							QJetsAdderCA8 = cms.PSet(initialSeed = cms.untracked.uint32(7)),
@@ -692,17 +673,26 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['QJetsAdder'+jetALGO+':QjetsVolatility']  
 		jetSeq += getattr(proc, 'QJetsAdder'+jetALGO )
 		toolsUsed.append( 'QJetsAdder'+jetALGO )
-		'''
-		### This is for 731 or higher
-		if 'ak4' in jetalgo:
-			proc.load('RecoJets.JetProducers.QGTagger_cfi')
-			proc.QGTagger.srcJets = cms.InputTag(jetalgo+'PFJets'+PUMethod)    # Could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD)
-			proc.QGTagger.jetsLabel = cms.string('QGL_AK4PFchs')        # Other options (might need to add an ESSource for it): see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
-			elemToKeep += [ 'keep *_QGTagger_*_*' ]
-			getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['QJetsAdder'+jetALGO+':qgLikelihood']  
-			jetSeq += getattr(proc, 'QGTagger' )
+	'''
+
+	###### QGTagger
+	if addQGTagger:
+		if ( 'ak4' in jetalgo ) and ( PUMethod not in ['Puppi','CS','SK'] ) :
+			from RecoJets.JetProducers.QGTagger_cfi import QGTagger
+			proc.load('RecoJets.JetProducers.QGTagger_cfi') 	## In 74X you need to run some stuff before.
+			setattr( proc, 'QGTagger'+jetALGO+'PF'+PUMethod, 
+					QGTagger.clone(
+						srcJets = cms.InputTag(jetalgo+'PFJets'+PUMethod),    # Could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD)
+						jetsLabel = cms.string('QGL_AK4PF'+QGjetsLabel)        # Other options (might need to add an ESSource for it): see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
+						)
+					)
+			elemToKeep += [ 'keep *_QGTagger'+jetALGO+'PF'+PUMethod+'_*_*' ]
+			getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['QGTagger'+jetALGO+'PF'+PUMethod+':qgLikelihood']  
+			jetSeq += getattr(proc, 'QGTagger'+jetALGO+'PF'+PUMethod )
+
+                        toolsUsed.append( 'QGTagger'+jetALGO+'PF'+PUMethod )
 		else:
-			print '|---- jetToolBox: QGTagger is optimized for ak4 jets.'
+			print '|---- jetToolBox: QGTagger is optimized for ak4 jets with CHS. NOT running QGTagger'
 
 			
 	####### Pileup JetID
@@ -731,7 +721,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                         elemToKeep += ['keep *_'+jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator_*_*']
                         toolsUsed.append( jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator' )
 		else:
-                        print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS.'
+                        print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS. NOT running PUJetID.'
 	
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
@@ -741,7 +731,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_calo*_*' ]
 	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_tagInfos_*' ]
 
-	print '|---- jetToolBox: Running '+', '.join(toolsUsed)+'.'
+	if len(toolsUsed) > 0 : print '|---- jetToolBox: Running '+', '.join(toolsUsed)+'.'
 	print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+' collection.'
 
 	### "return"
