@@ -165,7 +165,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	####  Creating PATjets
 	if 'Puppi' in PUMethod:
-
 		proc.load('CommonTools.PileupAlgos.Puppi_cff')
 		from RecoJets.JetProducers.ak4PFJetsPuppi_cfi import ak4PFJetsPuppi
 		setattr( proc, jetalgo+'PFJetsPuppi', 
@@ -295,21 +294,22 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		if addSoftDropSubjets:
 
-			setattr( proc, jetalgo+'GenJetsNoNuSoftDrop',
-					ak4GenJets.clone(
-						SubJetParameters,
-						useSoftDrop = cms.bool(True),
-						rParam = jetSize, 
-						jetAlgorithm = algorithm, 
-						useExplicitGhosts=cms.bool(True),
-						#zcut=cms.double(zCutSD), 
-						R0= cms.double(jetSize),
-						beta=cms.double(betaCut),
-						writeCompound = cms.bool(True),
-						jetCollInstanceName=cms.string('SubJets')
-						))
-			if miniAOD: getattr( proc, jetalgo+'GenJetsNoNuSoftDrop' ).src = 'packedGenParticlesForJetsNoNu'
-			jetSeq += getattr(proc, jetalgo+'GenJetsNoNuSoftDrop' )
+			if runOnMC:
+				setattr( proc, jetalgo+'GenJetsNoNuSoftDrop',
+						ak4GenJets.clone(
+							SubJetParameters,
+							useSoftDrop = cms.bool(True),
+							rParam = jetSize, 
+							jetAlgorithm = algorithm, 
+							useExplicitGhosts=cms.bool(True),
+							#zcut=cms.double(zCutSD), 
+							R0= cms.double(jetSize),
+							beta=cms.double(betaCut),
+							writeCompound = cms.bool(True),
+							jetCollInstanceName=cms.string('SubJets')
+							))
+				if miniAOD: getattr( proc, jetalgo+'GenJetsNoNuSoftDrop' ).src = 'packedGenParticlesForJetsNoNu'
+				jetSeq += getattr(proc, jetalgo+'GenJetsNoNuSoftDrop' )
 
 			addJetCollection(
 					proc,
@@ -728,4 +728,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				fileName = cms.untracked.string('jettoolbox.root'), 
 				outputCommands = cms.untracked.vstring( elemToKeep ) ) )
 
-
+	if runOnData:
+		from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
+		removeMCMatching(proc, names=['Jets'], outputModules=[outputFile])
