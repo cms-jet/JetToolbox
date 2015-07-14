@@ -166,7 +166,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	####  Creating PATjets
 	if 'Puppi' in PUMethod:
-
 		proc.load('CommonTools.PileupAlgos.Puppi_cff')
 		from RecoJets.JetProducers.ak4PFJetsPuppi_cfi import ak4PFJetsPuppi
 		setattr( proc, jetalgo+'PFJetsPuppi', 
@@ -715,10 +714,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_calo*_*' ]
 	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_tagInfos_*' ]
 
-	if runOnData:
-		from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
-		removeMCMatching(proc, names=['Jets'], outputModules=['outputFile'])
-
 	if len(toolsUsed) > 0 : print '|---- jetToolBox: Running '+', '.join(toolsUsed)+'.'
 	print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+' collection.'
 
@@ -730,4 +725,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				fileName = cms.untracked.string('jettoolbox.root'), 
 				outputCommands = cms.untracked.vstring( elemToKeep ) ) )
 
-
+	if runOnData:
+		from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
+		removeMCMatching(proc, names=['Jets'], outputModules=[outputFile])
