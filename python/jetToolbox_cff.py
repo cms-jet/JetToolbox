@@ -44,7 +44,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	runOnData = not runOnMC
 	if runOnData:
+<<<<<<< HEAD
 		print '|---- jetToolBox: JETTOOLBOX RUNNING ON DATA'
+=======
+>>>>>>> master
 		GetJetMCFlavour = False
 		GetSubjetMCFlavour = False
 	
@@ -60,8 +63,13 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			'AK1PFSK', 'AK2PFSK', 'AK3PFSK', 'AK4PFSK', 'AK5PFSK', 'AK6PFSK', 'AK7PFSK', 'AK8PFSK', 'AK9PFSK', 'AK10PFSK',  
 			'AK1PF', 'AK2PF', 'AK3PF', 'AK4PF', 'AK5PF', 'AK6PF', 'AK7PF', 'AK8PF', 'AK9PF', 'AK10PF' ]
 	JECLevels = [ 'L1Offset', 'L1FastJet', 'L1JPTOffset', 'L2Relative', 'L3Absolute', 'L5Falvour', 'L7Parton' ]
+<<<<<<< HEAD
 	if runOnData: JECLevels += ['L2L3Residual']
 
+=======
+	if runOnData:
+		JECLevels += ['L2L3Residual']
+>>>>>>> master
 	jetAlgo = ''
 	algorithm = ''
 	size = ''
@@ -713,6 +721,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_*_*' ]
 	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_calo*_*' ]
 	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_tagInfos_*' ]
+
+	if runOnData:
+		from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
+		removeMCMatching(proc, names=['Jets'], outputModules=[])
 
 	if len(toolsUsed) > 0 : print '|---- jetToolBox: Running '+', '.join(toolsUsed)+'.'
 	print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+' collection.'
