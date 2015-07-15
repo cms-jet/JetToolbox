@@ -700,7 +700,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					pileupJetIdCalculator.clone(
 						jets = cms.InputTag(jetalgo+'PFJets'+PUMethod),
 						rho = cms.InputTag("fixedGridRhoFastjetAll"),
-						vertexes = cms.InputTag(pvLabel)
+						vertexes = cms.InputTag(pvLabel),
+						applyJec = cms.bool(True),
+						inputIsCorrected = cms.bool(False)
 						))
 
 			setattr( proc, jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator',
