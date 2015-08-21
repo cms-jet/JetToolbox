@@ -233,7 +233,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PF'
 
 	if 'None' in JETCorrPayload: JEC = None
-	else: JEC = ( JETCorrPayload.replace('PUPPI','chs').replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )   ### temporary
+	else: JEC = ( JETCorrPayload.replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )   ### temporary
 	#else: JEC = ( JETCorrPayload., JETCorrLevels, 'None' ) 
 	print '|---- jetToolBox: Applying this corrections: '+str(JEC)
 
