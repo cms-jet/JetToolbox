@@ -27,6 +27,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		runOnMC=True,
 		JETCorrPayload='', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
 		Cut = '', 
+		bTagDiscriminators = None, 
 		subJETCorrPayload='', subJETCorrLevels = [ 'None' ], GetSubjetMCFlavour=False,
 		CutSubjet = '', 
 		addPruning=False, zCut=0.1, rCut=0.5, addPrunedSubjets=False,
@@ -142,16 +143,17 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		
 
 	## b-tag discriminators
-	bTagDiscriminators = [
-			'pfTrackCountingHighEffBJetTags',
-			'pfTrackCountingHighPurBJetTags',
-			'pfJetProbabilityBJetTags',
-			'pfJetBProbabilityBJetTags',
-			'pfSimpleSecondaryVertexHighEffBJetTags',
-			'pfSimpleSecondaryVertexHighPurBJetTags',
-			'pfCombinedSecondaryVertexV2BJetTags',
-			'pfCombinedInclusiveSecondaryVertexV2BJetTags'
-	    ]
+	if bTagDiscriminators is None:
+		bTagDiscriminators = [
+				'pfTrackCountingHighEffBJetTags',
+				'pfTrackCountingHighPurBJetTags',
+				'pfJetProbabilityBJetTags',
+				'pfJetBProbabilityBJetTags',
+				'pfSimpleSecondaryVertexHighEffBJetTags',
+				'pfSimpleSecondaryVertexHighPurBJetTags',
+				'pfCombinedSecondaryVertexV2BJetTags',
+				'pfCombinedInclusiveSecondaryVertexV2BJetTags'
+	    	]
 
 	### Jet Corrections
 	if not set(JETCorrLevels).issubset(set(JECLevels)): 
