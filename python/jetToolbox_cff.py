@@ -40,7 +40,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addNsub=False, maxTau=4,
 		addPUJetID=False,
 		addQJets=False,
-		addQGTagger=False, QGjetsLabel='chs'
+		addQGTagger=False, QGjetsLabel='chs',
+		addEnergyCorrFunc=False, ecfBeta = 1.0, maxECF=3,
 		):
 
 	runOnData = not runOnMC
@@ -708,6 +709,21 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                         toolsUsed.append( jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator' )
 		else:
                         print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS. NOT running PUJetID.'
+
+	###### Energy Correlation Functions
+	if addEnergyCorrFunc:
+		from RecoJets.JetProducers.ECF_cfi import ECF 
+		rangeECF = range(1,maxECF+1)
+		setattr( proc, jetalgo+'PFJets'+PUMethod+'ECF', ECF.clone(
+				src = cms.InputTag(jetalgo+'PFJets'+PUMethod),
+				Njets = cms.vuint32( rangeECF ),
+				beta = cms.double( ecfBeta ) 
+				))
+
+		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+'ECF_*_*'] 
+		for ecf in rangeECF: getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+'ECF:ecf'+str(ecf) ]
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'ECF' )
+		toolsUsed.append( jetalgo+'PFJets'+PUMethod+'ECF' )
 	
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
