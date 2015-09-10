@@ -178,8 +178,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
 		jetSeq += getattr(proc, 'puppi' )
 		jetSeq += getattr(proc, jetalgo+'PFJetsPuppi' )
-		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFPUPPI'
-		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFPUPPI'
+		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFPuppi'
+		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFPuppi'
 
 	elif 'CS' in PUMethod:
 
@@ -235,13 +235,13 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PF'
 
 	if 'None' in JETCorrPayload: JEC = None
-	else: JEC = ( JETCorrPayload.replace('PUPPI','chs').replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )   ### temporary
+	else: JEC = ( JETCorrPayload.replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )   ### temporary
 	#else: JEC = ( JETCorrPayload., JETCorrLevels, 'None' ) 
 	print '|---- jetToolBox: Applying this corrections: '+str(JEC)
 
 	if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger:
 		if 'None' in subJETCorrPayload: subJEC = None
-		else: subJEC = ( subJETCorrPayload.replace('PUPPI','chs').replace('CS','chs').replace('SK','chs') , subJETCorrLevels, 'None' )   ### temporary
+		else: subJEC = ( subJETCorrPayload.replace('CS','chs').replace('SK','chs') , subJETCorrLevels, 'None' )   ### temporary
 
 
 	if miniAOD: setattr( proc, jetalgo+'PFJets'+PUMethod+'Constituents', cms.EDFilter("MiniAODJetConstituentSelector", src = cms.InputTag( jetalgo+'PFJets'+PUMethod ), cut = cms.string( Cut ) ))
