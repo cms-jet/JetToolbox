@@ -167,16 +167,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	####  Creating PATjets
 	if 'Puppi' in PUMethod:
 		proc.load('CommonTools.PileupAlgos.Puppi_cff')
+		puppi.candName = cms.InputTag( pfCand ) 
+		if miniAOD: puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
+		jetSeq += getattr(proc, 'puppi' )
 		from RecoJets.JetProducers.ak4PFJetsPuppi_cfi import ak4PFJetsPuppi
 		setattr( proc, jetalgo+'PFJetsPuppi', 
 				ak4PFJetsPuppi.clone( doAreaFastjet = True, 
 					rParam = jetSize, 
 					jetAlgorithm = algorithm ) )  
-		if miniAOD:
-			puppi.candName = cms.InputTag('packedPFCandidates')
-			puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
-		if newPFCollection: puppi.candName = cms.InputTag( nameNewPFCollection )
-		jetSeq += getattr(proc, 'puppi' )
 		jetSeq += getattr(proc, jetalgo+'PFJetsPuppi' )
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFPuppi'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFPuppi'
@@ -188,8 +186,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				ak4PFJetsCS.clone( doAreaFastjet = True, 
 					csRParam = cms.double(jetSize),
 					jetAlgorithm = algorithm ) ) 
-		if miniAOD: getattr( proc, jetalgo+'PFJetsCS').src = 'packedPFCandidates'
-		if newPFCollection: getattr( proc, jetalgo+'PFJetsCS').src = nameNewPFCollection 
+		if miniAOD: getattr( proc, jetalgo+'PFJetsCS').src = pfCand
 		#setattr( proc, jetalgo+'PFJetsCSConstituents', ak8PFJetsCSConstituents.clone( src = cms.InputTag(jetalgo+'PFJetsCS') ) )
 		jetSeq += getattr(proc, jetalgo+'PFJetsCS' )
 
@@ -201,29 +198,28 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	elif 'SK' in PUMethod:
 
 		proc.load('CommonTools.PileupAlgos.softKiller_cfi')
+		getattr( proc, 'softKiller' ).PFCandidates = cms.InputTag( pfCand ) 
+		jetSeq += getattr(proc, 'softKiller' )
 		from RecoJets.JetProducers.ak4PFJetsSK_cfi import ak4PFJetsSK
 		setattr( proc, jetalgo+'PFJetsSK', 
 				ak4PFJetsSK.clone( rParam = jetSize, 
 					jetAlgorithm = algorithm ) ) 
-		if miniAOD: getattr( proc, 'softKiller' ).PFCandidates = cms.InputTag('packedPFCandidates')
-		if newPFCollection: getattr( proc, 'softKiller' ).PFCandidates = cms.InputTag( nameNewPFCollection ) 
-		jetSeq += getattr(proc, 'softKiller' )
 		jetSeq += getattr(proc, jetalgo+'PFJetsSK' )
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFSK'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFSK'
 	
 	elif 'CHS' in PUMethod: 
 		
-		setattr( proc, 'chs', cms.EDFilter('CandPtrSelector', src = cms.InputTag( pfCand ), cut = cms.string('fromPV')) )
-		jetSeq += getattr(proc, 'chs')
-
 		setattr( proc, jetalgo+'PFJetsCHS', 
 				ak4PFJetsCHS.clone( 
+					src = cms.InputTag( pfCand ),
 					doAreaFastjet = True, 
 					rParam = jetSize, 
 					jetAlgorithm = algorithm ) ) 
-		if miniAOD: getattr( proc, jetalgo+'PFJetsCHS').src = 'chs'
-		if newPFCollection: getattr( proc, jetalgo+'PFJetsCHS').src = nameNewPFCollection
+		if miniAOD and not newPFCollection:
+			setattr( proc, 'chs', cms.EDFilter('CandPtrSelector', src = cms.InputTag( pfCand ), cut = cms.string('fromPV')) )
+			jetSeq += getattr(proc, 'chs')
+			getattr( proc, jetalgo+'PFJetsCHS').src = 'chs'
 		jetSeq += getattr(proc, jetalgo+'PFJetsCHS' )
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFchs'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFchs'
@@ -232,11 +228,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		PUMethod = ''
 		setattr( proc, jetalgo+'PFJets', 
 				ak4PFJets.clone( 
+					src = cms.InputTag( pfCand ),
 					doAreaFastjet = True, 
 					rParam = jetSize, 
 					jetAlgorithm = algorithm ) ) 
-		if miniAOD: getattr( proc, jetalgo+'PFJets').src = 'packedPFCandidates'
-		if newPFCollection: getattr( proc, jetalgo+'PFJets').src = nameNewPFCollection
 		jetSeq += getattr(proc, jetalgo+'PFJets' )
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PF'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PF'
@@ -262,10 +257,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			algo = jetalgo,
 			rParam = jetSize,
 			jetCorrections = JEC if JEC is not None else None, 
-			pfCandidates = cms.InputTag( pfCand ),  #'packedPFCandidates'),
-			svSource = cms.InputTag( svLabel ),   #'slimmedSecondaryVertices'),
+			pfCandidates = cms.InputTag( pfCand ),  
+			svSource = cms.InputTag( svLabel ),  
 			genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNu'),
-			pvSource = cms.InputTag( pvLabel ), #'offlineSlimmedPrimaryVertices'),
+			pvSource = cms.InputTag( pvLabel ), 
 			btagDiscriminators = bTagDiscriminators,
 			getJetMCFlavour = GetJetMCFlavour,
 			genParticles = cms.InputTag(genParticlesLabel),
