@@ -22,6 +22,7 @@ from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection
 
 
 def jetToolbox( proc, jetType, jetSequence, outputFile, 
+		newPFCollection=False, nameNewPFCollection = '',	
 		PUMethod='CHS',                    #### Options: Puppi, CS, SK, Plain
 		miniAOD=True,
 		runOnMC=True,
@@ -53,6 +54,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	#######  Verifying some inputs and defining variables
 	###############################################################################
 	print '|---- jetToolbox: Initialyzing collection...'
+	if newPFCollection: print '|---- jetToolBox: Using '+ nameNewPFCollection +' as PFCandidates collection'
 	supportedJetAlgos = { 'ak': 'AntiKt', 'ca' : 'CambridgeAachen', 'kt' : 'Kt' }
 	recommendedJetAlgos = [ 'ak4', 'ak8', 'ca4', 'ca8', 'ca10' ]
 	payloadList = [ 'None',
@@ -101,11 +103,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		pvLabel = 'offlineSlimmedPrimaryVertices'
 		svLabel = 'slimmedSecondaryVertices'
 		tvLabel = 'unpackedTracksAndVertices'
-		pfCand = 'packedPFCandidates'
-
-		setattr( proc, 'chs', cms.EDFilter('CandPtrSelector', src = cms.InputTag('packedPFCandidates'), cut = cms.string('fromPV')) )
-		jetSeq += getattr(proc, 'chs')
-
+		pfCand = nameNewPFCollection if newPFCollection else 'packedPFCandidates'
 
 		if runOnMC:
 			## Filter out neutrinos from packed GenParticles
@@ -132,7 +130,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		genParticlesLabel = 'genParticles'
 		pvLabel = 'offlinePrimaryVertices'
 		tvLabel = 'generalTracks'
-		pfCand = 'particleFlow'
+		pfCand =  nameNewPFCollection if newPFCollection else 'particleFlow'
 		svLabel = 'inclusiveCandidateSecondaryVertices'
 
 		proc.load('CommonTools.ParticleFlow.pfNoPileUpJME_cff')
@@ -169,15 +167,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	####  Creating PATjets
 	if 'Puppi' in PUMethod:
 		proc.load('CommonTools.PileupAlgos.Puppi_cff')
+		puppi.candName = cms.InputTag( pfCand ) 
+		if miniAOD: puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
+		jetSeq += getattr(proc, 'puppi' )
 		from RecoJets.JetProducers.ak4PFJetsPuppi_cfi import ak4PFJetsPuppi
 		setattr( proc, jetalgo+'PFJetsPuppi', 
 				ak4PFJetsPuppi.clone( doAreaFastjet = True, 
 					rParam = jetSize, 
 					jetAlgorithm = algorithm ) )  
-		if miniAOD:
-			puppi.candName = cms.InputTag('packedPFCandidates')
-			puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
-		jetSeq += getattr(proc, 'puppi' )
 		jetSeq += getattr(proc, jetalgo+'PFJetsPuppi' )
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFPuppi'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFPuppi'
@@ -189,8 +186,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				ak4PFJetsCS.clone( doAreaFastjet = True, 
 					csRParam = cms.double(jetSize),
 					jetAlgorithm = algorithm ) ) 
-		#if miniAOD: getattr( proc, jetalgo+'PFJetsCS').src = 'chs'
-		if miniAOD: getattr( proc, jetalgo+'PFJetsCS').src = 'packedPFCandidates'
+		if miniAOD: getattr( proc, jetalgo+'PFJetsCS').src = pfCand
 		#setattr( proc, jetalgo+'PFJetsCSConstituents', ak8PFJetsCSConstituents.clone( src = cms.InputTag(jetalgo+'PFJetsCS') ) )
 		jetSeq += getattr(proc, jetalgo+'PFJetsCS' )
 
@@ -202,23 +198,28 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	elif 'SK' in PUMethod:
 
 		proc.load('CommonTools.PileupAlgos.softKiller_cfi')
+		getattr( proc, 'softKiller' ).PFCandidates = cms.InputTag( pfCand ) 
+		jetSeq += getattr(proc, 'softKiller' )
 		from RecoJets.JetProducers.ak4PFJetsSK_cfi import ak4PFJetsSK
 		setattr( proc, jetalgo+'PFJetsSK', 
 				ak4PFJetsSK.clone( rParam = jetSize, 
 					jetAlgorithm = algorithm ) ) 
-		if miniAOD: getattr( proc, 'softKiller' ).PFCandidates = cms.InputTag('packedPFCandidates')
-		jetSeq += getattr(proc, 'softKiller' )
 		jetSeq += getattr(proc, jetalgo+'PFJetsSK' )
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFSK'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFSK'
 	
 	elif 'CHS' in PUMethod: 
+		
 		setattr( proc, jetalgo+'PFJetsCHS', 
 				ak4PFJetsCHS.clone( 
+					src = cms.InputTag( pfCand ),
 					doAreaFastjet = True, 
 					rParam = jetSize, 
 					jetAlgorithm = algorithm ) ) 
-		if miniAOD: getattr( proc, jetalgo+'PFJetsCHS').src = 'chs'
+		if miniAOD and not newPFCollection:
+			setattr( proc, 'chs', cms.EDFilter('CandPtrSelector', src = cms.InputTag( pfCand ), cut = cms.string('fromPV')) )
+			jetSeq += getattr(proc, 'chs')
+			getattr( proc, jetalgo+'PFJetsCHS').src = 'chs'
 		jetSeq += getattr(proc, jetalgo+'PFJetsCHS' )
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFchs'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFchs'
@@ -227,10 +228,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		PUMethod = ''
 		setattr( proc, jetalgo+'PFJets', 
 				ak4PFJets.clone( 
+					src = cms.InputTag( pfCand ),
 					doAreaFastjet = True, 
 					rParam = jetSize, 
 					jetAlgorithm = algorithm ) ) 
-		if miniAOD: getattr( proc, jetalgo+'PFJets').src = 'packedPFCandidates'
 		jetSeq += getattr(proc, jetalgo+'PFJets' )
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PF'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PF'
@@ -256,10 +257,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			algo = jetalgo,
 			rParam = jetSize,
 			jetCorrections = JEC if JEC is not None else None, 
-			pfCandidates = cms.InputTag( pfCand ),  #'packedPFCandidates'),
-			svSource = cms.InputTag( svLabel ),   #'slimmedSecondaryVertices'),
+			pfCandidates = cms.InputTag( pfCand ),  
+			svSource = cms.InputTag( svLabel ),  
 			genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNu'),
-			pvSource = cms.InputTag( pvLabel ), #'offlineSlimmedPrimaryVertices'),
+			pvSource = cms.InputTag( pvLabel ), 
 			btagDiscriminators = bTagDiscriminators,
 			getJetMCFlavour = GetJetMCFlavour,
 			genParticles = cms.InputTag(genParticlesLabel),
@@ -269,7 +270,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	if 'CS' in PUMethod: getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
 	
-
 	#### Groomers
 	if addSoftDrop or addSoftDropSubjets: 
 
@@ -733,9 +733,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_calo*_*' ]
 	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_tagInfos_*' ]
 
-	if runOnData:
-		from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
-		removeMCMatching(proc, names=['Jets'], outputModules=[])
 
 	if len(toolsUsed) > 0 : print '|---- jetToolBox: Running '+', '.join(toolsUsed)+'.'
 	print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+' collection.'
