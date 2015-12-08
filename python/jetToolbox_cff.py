@@ -133,7 +133,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		pfCand =  nameNewPFCollection if newPFCollection else 'particleFlow'
 		svLabel = 'inclusiveCandidateSecondaryVertices'
 
-		proc.load('CommonTools.ParticleFlow.pfNoPileUpJME_cff')
 		if runOnMC:
 			proc.load('RecoJets.Configuration.GenJetParticles_cff')
 			setattr( proc, jetalgo+'GenJetsNoNu', ak4GenJets.clone( src = 'genParticlesForJetsNoNu', rParam = jetSize, jetAlgorithm = algorithm ) ) 
@@ -231,6 +230,23 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				setattr( proc, 'chs', cms.EDFilter('CandPtrSelector', src = cms.InputTag( pfCand ), cut = cms.string('fromPV')) )
 				jetSeq += getattr(proc, 'chs')
 				srcForPFJets = 'chs'
+		else:
+			if ( pfCand == 'particleFlow' ):
+				from RecoParticleFlow.PFProducer.particleFlowTmpPtrs_cfi import particleFlowTmpPtrs
+				setattr( proc, 'newParticleFlowTmpPtrs', particleFlowTmpPtrs.clone( src = pfCand ) )
+				jetSeq += getattr(proc, 'newParticleFlowTmpPtrs')
+				from CommonTools.ParticleFlow.pfNoPileUpJME_cff import pfPileUpJME, pfNoPileUpJME
+				proc.load('CommonTools.ParticleFlow.goodOfflinePrimaryVertices_cfi')
+				setattr( proc, 'newPfPileUpJME', pfPileUpJME.clone( PFCandidates= 'newParticleFlowTmpPtrs' ) )
+				jetSeq += getattr(proc, 'newPfPileUpJME')
+				setattr( proc, 'newPfNoPileUpJME', pfNoPileUpJME.clone( topCollection='newPfPileUpJME', bottomCollection= 'newParticleFlowTmpPtrs' ) )
+				jetSeq += getattr(proc, 'newPfNoPileUpJME')
+				srcForPFJets = 'newPfNoPileUpJME'
+			else: 
+				proc.load('CommonTools.ParticleFlow.pfNoPileUpJME_cff')
+				srcForPFJets = 'pfNoPileUpJME'
+			
+
 		setattr( proc, jetalgo+'PFJetsCHS', 
 				ak4PFJetsCHS.clone( src = cms.InputTag( srcForPFJets ), 
 					doAreaFastjet = True, 
