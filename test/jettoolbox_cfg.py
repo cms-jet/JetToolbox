@@ -7,7 +7,7 @@ process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag.globaltag = 'MCRUN2_74_V7'
+process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_v5'
 
 process.load('FWCore.MessageLogger.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 10
@@ -15,8 +15,11 @@ process.MessageLogger.suppressWarning = cms.untracked.vstring('ecalLaserCorrFilt
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.options.allowUnscheduled = cms.untracked.bool(True)
 
+#process.load("JetMETCorrections.Configuration.JetCorrectionServices_cff")
+#process.load("JetMETCorrections.Configuration.JetCorrectionServicesAllAlgos_cff")
+
 ########################################################################
-#### THESE EXAMPLES ARE JUST TEST, MOST OF THEM ARE TOTALLY WRONG. 
+#### THESE EXAMPLES ARE JUST TESTS, MOST OF THEM ARE TOTALLY WRONG. 
 #### THERE ARE JUST TO TEST SEVERAL FEATURES OF THE JETTOOLBOX.
 #######################################################################
 
@@ -24,7 +27,8 @@ from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='Puppi', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True , JETCorrPayload='AK8PFchs', subJETCorrPayload='AK4PFchs', subJETCorrLevels=['L2Relative', 'L3Absoulte'] ) #, Cut='pt > 100 && abs(eta) < 2.4' ) 
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='SK', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, JETCorrLevels=['L1FastJet', 'L2Relative'] ) 
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True ) 
-jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, JETCorrPayload='AK3Pachs', subJETCorrPayload='AK8PFchs', JETCorrLevels=['L1FastJet', 'L2Relative'], addEnergyCorrFunc=True, maxECF=5 ) 
+#jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, JETCorrPayload='AK3Pachs', subJETCorrPayload='AK8PFchs', JETCorrLevels=['L1FastJet', 'L2Relative'], addEnergyCorrFunc=True, maxECF=5 ) 
+jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', JETCorrPayload='AK4PFchs', JETCorrLevels = ['L1FastJet','L2Relative','L3Absolute'], miniAOD=True, runOnMC=True, addNsub=True, addPUJetID=True, addPruning=False, addTrimming=False, addCMSTopTagger=True, addHEPTopTagger=True, addMassDrop=True, addSoftDrop=False, addQGTagger=True )
 #
 #jetToolbox( process, 'ca8', 'ca8JetSubs', 'out', PUMethod='Puppi', addCMSTopTagger=True, addMassDrop=True, addSoftDrop=True ) 
 #jetToolbox( process, 'ca8', 'ca8JetSubs', 'out', PUMethod='SK', addCMSTopTagger=True, addMassDrop=True, addSoftDrop=True, JETCorrPayload='AK8PF' ) 
