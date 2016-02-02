@@ -12,6 +12,7 @@ hJetsPt = ROOT.TH1F("hJetsPt", ";jet pt (GeV)", 100, 0, 1000 )
 hJetsTrimmedMass = ROOT.TH1F("hJetsTrimmedMass", ";jet Trimmed mass (GeV)", 30, 0, 300 )
 hJetsPrunedMass = ROOT.TH1F("hJetsPrunedMass", ";jet Pruned mass (GeV)", 30, 0, 300 )
 hJetsSoftDropMass = ROOT.TH1F("hJetsSoftDropMass", ";jet SoftDrop mass (GeV)", 30, 0, 300 )
+hJetsCSV = ROOT.TH1F("hJetsCSV", ";CSV value", 100, 0, 1 )
 hJetsCHF = ROOT.TH1F("hJetsCHF", ";Charged Hadron Fraction", 100, 0, 1 )
 
 hJet1Pt = ROOT.TH1F("hJet1Pt", ";jet pt (GeV)", 100, 0, 1000 )
@@ -39,11 +40,11 @@ for event in events:
 
 	i = 0
 	for jet in jets:
-
 		if ( jet.pt() > 50 ) and ( abs( jet.eta() ) < 2.5 ):
 			#print jet.pt(), jet.chargedHadronEnergyFraction()
 			hJetsPt.Fill( jet.pt() )
 			hJetsCHF.Fill( jet.chargedHadronEnergyFraction() )
+			hJetsCSV.Fill( jet.bDiscriminator('pfCombinedInclusiveSecondaryVertexV2BJetTags') )
 			hJetsTrimmedMass.Fill( jet.userFloat("ak8PFJetsPuppiTrimmedMass") )
 			hJetsPrunedMass.Fill( jet.userFloat("ak8PFJetsPuppiPrunedMass") )
 			hJetsSoftDropMass.Fill( jet.userFloat("ak8PFJetsPuppiSoftDropMass") )
