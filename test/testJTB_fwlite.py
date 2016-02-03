@@ -23,9 +23,10 @@ hJet1CHF = ROOT.TH1F("hJet1CHF", ";Charged Hadron Fraction", 100, 0, 1 )
 
 #EVENT LOOP
 events = Events ('jettoolbox.root')
+PUMethod = 'Puppi'
 
 handle = Handle("std::vector<pat::Jet>")
-label = ("selectedPatJetsAK8PFPuppi") 
+label = ("selectedPatJetsAK8PF"+PUMethod) 
 
 # loop over events in this file
 nevents = 0
@@ -45,17 +46,17 @@ for event in events:
 			hJetsPt.Fill( jet.pt() )
 			hJetsCHF.Fill( jet.chargedHadronEnergyFraction() )
 			hJetsCSV.Fill( jet.bDiscriminator('pfCombinedInclusiveSecondaryVertexV2BJetTags') )
-			hJetsTrimmedMass.Fill( jet.userFloat("ak8PFJetsPuppiTrimmedMass") )
-			hJetsPrunedMass.Fill( jet.userFloat("ak8PFJetsPuppiPrunedMass") )
-			hJetsSoftDropMass.Fill( jet.userFloat("ak8PFJetsPuppiSoftDropMass") )
+			hJetsTrimmedMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"TrimmedMass") )
+			hJetsPrunedMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"PrunedMass") )
+			hJetsSoftDropMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"SoftDropMass") )
 
 			i += 1
 			if ( i == 1 ):
 				hJet1Pt.Fill( jet.pt() )
 				hJet1CHF.Fill( jet.chargedHadronEnergyFraction() )
-				hJet1TrimmedMass.Fill( jet.userFloat("ak8PFJetsPuppiTrimmedMass") )
-				hJet1PrunedMass.Fill( jet.userFloat("ak8PFJetsPuppiPrunedMass") )
-				hJet1SoftDropMass.Fill( jet.userFloat("ak8PFJetsPuppiSoftDropMass") )
+				hJet1TrimmedMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"TrimmedMass") )
+				hJet1PrunedMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"PrunedMass") )
+				hJet1SoftDropMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"SoftDropMass") )
 
 #CLEANUP
 outputFile.Write()
