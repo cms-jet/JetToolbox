@@ -1,10 +1,10 @@
 ###############################################
 ####
 ####   Jet Substructure Toolbox (jetToolBox)
-####   Python function for easy access of jet substructure tools implemented in CMS
+####   Python function for easy access of 
+####   jet substructure tools implemented in CMS
 ####
 ####   Alejandro Gomez Espinosa (gomez@physics.rutgers.edu)
-####   First Stable Version for 73X. 2015/03/25
 ####
 ###############################################
 import FWCore.ParameterSet.Config as cms
@@ -23,7 +23,7 @@ from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection
 
 def jetToolbox( proc, jetType, jetSequence, outputFile, 
 		newPFCollection=False, nameNewPFCollection = '',	
-		PUMethod='CHS',                    #### Options: Puppi, CS, SK, Plain
+		PUMethod='CHS', 
 		miniAOD=True,
 		runOnMC=True,
 		JETCorrPayload='', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
@@ -180,31 +180,27 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			if miniAOD: puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
 			jetSeq += getattr(proc, 'puppi' )
 			srcForPFJets = 'puppi'
-		from RecoJets.JetProducers.ak4PFJetsPuppi_cfi import ak4PFJetsPuppi
-		setattr( proc, jetalgo+'PFJetsPuppi', 
-				ak4PFJetsPuppi.clone( src = cms.InputTag( srcForPFJets ),
-					doAreaFastjet = True, 
-					rParam = jetSize, 
-					jetAlgorithm = algorithm ) )  
-		jetSeq += getattr(proc, jetalgo+'PFJetsPuppi' )
+
+		if 'PuppiCS' in PUMethod:
+			from RecoJets.JetProducers.ak4PFJetsCHSCS_cfi import ak4PFJetsCHSCS
+			setattr( proc, jetalgo+'PFJetsPuppiCS', 
+					ak4PFJetsCHSCS.clone( doAreaFastjet = True, 
+						src = cms.InputTag( srcForPFJets ),
+						csRParam = cms.double(jetSize),
+						jetAlgorithm = algorithm ) ) 
+			if miniAOD: getattr( proc, jetalgo+'PFJetsPuppiCS').src = pfCand
+			jetSeq += getattr(proc, jetalgo+'PFJetsPuppiCS' )
+		else:
+			from RecoJets.JetProducers.ak4PFJetsPuppi_cfi import ak4PFJetsPuppi
+			setattr( proc, jetalgo+'PFJetsPuppi', 
+					ak4PFJetsPuppi.clone( src = cms.InputTag( srcForPFJets ),
+						doAreaFastjet = True, 
+						rParam = jetSize, 
+						jetAlgorithm = algorithm ) )  
+			jetSeq += getattr(proc, jetalgo+'PFJetsPuppi' )
+
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFPuppi'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFPuppi'
-
-	elif 'CS' in PUMethod:
-
-		from RecoJets.JetProducers.ak4PFJetsCS_cfi import ak4PFJetsCS
-		setattr( proc, jetalgo+'PFJetsCS', 
-				ak4PFJetsCS.clone( doAreaFastjet = True, 
-					csRParam = cms.double(jetSize),
-					jetAlgorithm = algorithm ) ) 
-		if miniAOD: getattr( proc, jetalgo+'PFJetsCS').src = pfCand
-		#setattr( proc, jetalgo+'PFJetsCSConstituents', ak8PFJetsCSConstituents.clone( src = cms.InputTag(jetalgo+'PFJetsCS') ) )
-		jetSeq += getattr(proc, jetalgo+'PFJetsCS' )
-
-		#setattr( proc, jetalgo+'PFJetsCSConstituents', ak8PFJetsCSConstituents.clone( src = cms.InputTag(jetalgo+'PFJetsCS') ) )
-		jetSeq += getattr(proc, jetalgo+'PFJetsCS' )
-		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFCS'
-		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFCS'
 
 	elif 'SK' in PUMethod:
 
@@ -216,12 +212,24 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			getattr( proc, 'softKiller' ).PFCandidates = cms.InputTag( pfCand ) 
 			jetSeq += getattr(proc, 'softKiller' )
 			srcForPFJets = 'softKiller'
-		from RecoJets.JetProducers.ak4PFJetsSK_cfi import ak4PFJetsSK
-		setattr( proc, jetalgo+'PFJetsSK', 
-				ak4PFJetsSK.clone(  src = cms.InputTag( srcForPFJets ),
-					rParam = jetSize, 
-					jetAlgorithm = algorithm ) ) 
-		jetSeq += getattr(proc, jetalgo+'PFJetsSK' )
+
+		if 'SKCS' in PUMethod:
+			from RecoJets.JetProducers.ak4PFJetsCHSCS_cfi import ak4PFJetsCHSCS
+			setattr( proc, jetalgo+'PFJetsSKCS', 
+					ak4PFJetsCHSCS.clone( doAreaFastjet = True, 
+						src = cms.InputTag( srcForPFJets ),
+						csRParam = cms.double(jetSize),
+						jetAlgorithm = algorithm ) ) 
+			if miniAOD: getattr( proc, jetalgo+'PFJetsSKCS').src = pfCand
+			jetSeq += getattr(proc, jetalgo+'PFJetsSKCS' )
+		else:
+			from RecoJets.JetProducers.ak4PFJetsSK_cfi import ak4PFJetsSK
+			setattr( proc, jetalgo+'PFJetsSK', 
+					ak4PFJetsSK.clone(  src = cms.InputTag( srcForPFJets ),
+						rParam = jetSize, 
+						jetAlgorithm = algorithm ) ) 
+			jetSeq += getattr(proc, jetalgo+'PFJetsSK' )
+
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFSK'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFSK'
 	
@@ -251,13 +259,23 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				proc.load('CommonTools.ParticleFlow.pfNoPileUpJME_cff')
 				srcForPFJets = 'pfNoPileUpJME'
 			
+		if 'CHSCS' in PUMethod:
+			from RecoJets.JetProducers.ak4PFJetsCHSCS_cfi import ak4PFJetsCHSCS
+			setattr( proc, jetalgo+'PFJetsCHSCS', 
+					ak4PFJetsCHSCS.clone( doAreaFastjet = True, 
+						src = cms.InputTag( srcForPFJets ),
+						csRParam = cms.double(jetSize),
+						jetAlgorithm = algorithm ) ) 
+			if miniAOD: getattr( proc, jetalgo+'PFJetsCHSCS').src = pfCand
+			jetSeq += getattr(proc, jetalgo+'PFJetsCHSCS' )
+		else:
+			setattr( proc, jetalgo+'PFJetsCHS', 
+					ak4PFJetsCHS.clone( src = cms.InputTag( srcForPFJets ), 
+						doAreaFastjet = True, 
+						rParam = jetSize, 
+						jetAlgorithm = algorithm ) ) 
+			jetSeq += getattr(proc, jetalgo+'PFJetsCHS' )
 
-		setattr( proc, jetalgo+'PFJetsCHS', 
-				ak4PFJetsCHS.clone( src = cms.InputTag( srcForPFJets ), 
-					doAreaFastjet = True, 
-					rParam = jetSize, 
-					jetAlgorithm = algorithm ) ) 
-		jetSeq += getattr(proc, jetalgo+'PFJetsCHS' )
 		if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFchs'
 		if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFchs'
 
@@ -283,7 +301,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		else: subJEC = ( subJETCorrPayload.replace('CS','chs').replace('SK','chs') , subJETCorrLevels, 'None' )   ### temporary
 
 
-	if ( 'CHS' in PUMethod ) and miniAOD: setattr( proc, jetalgo+'PFJets'+PUMethod+'Constituents', cms.EDFilter("MiniAODJetConstituentSelector", src = cms.InputTag( jetalgo+'PFJets'+PUMethod ), cut = cms.string( Cut ) ))
+	if ( PUMethod in [ 'CHS', 'CHSCS', 'PuppiCS', 'SKCS' ] ) and miniAOD: setattr( proc, jetalgo+'PFJets'+PUMethod+'Constituents', cms.EDFilter("MiniAODJetConstituentSelector", src = cms.InputTag( jetalgo+'PFJets'+PUMethod ), cut = cms.string( Cut ) ))
 	else: setattr( proc, jetalgo+'PFJets'+PUMethod+'Constituents', cms.EDFilter("PFJetConstituentSelector", src = cms.InputTag( jetalgo+'PFJets'+PUMethod ), cut = cms.string( Cut ) ))
 	jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'Constituents' )
 
