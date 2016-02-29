@@ -21,12 +21,19 @@ hJet1PrunedMass = ROOT.TH1F("hJet1PrunedMass", ";jet Pruned mass (GeV)", 30, 0, 
 hJet1SoftDropMass = ROOT.TH1F("hJet1SoftDropMass", ";jet SoftDrop mass (GeV)", 30, 0, 300 )
 hJet1CHF = ROOT.TH1F("hJet1CHF", ";Charged Hadron Fraction", 100, 0, 1 )
 
+hNumSubjets = ROOT.TH1F("hNumSubJets", ";Number of Subjets", 10, 0, 10 )
+hSubJetsTau1 = ROOT.TH1F("hSubJetsTau1", ";#tau_{1}", 10, 0, 1 )
+
 #EVENT LOOP
 events = Events ('jettoolbox.root')
-PUMethod = 'Puppi'
+PUMethod = 'CHS'
 
 handle = Handle("std::vector<pat::Jet>")
 label = ("selectedPatJetsAK8PF"+PUMethod) 
+
+handleSubjets = Handle("std::vector<pat::Jet>")
+labelSubjets = ("selectedPatJetsAK8PF"+PUMethod+'PrunedPacked') 
+
 
 # loop over events in this file
 nevents = 0
@@ -38,6 +45,8 @@ for event in events:
 	event.getByLabel( label, handle )
 	jets = handle.product()
 
+	event.getByLabel( labelSubjets, handleSubjets )
+	subjets = handleSubjets.product()
 
 	i = 0
 	for jet in jets:
@@ -57,6 +66,13 @@ for event in events:
 				hJet1TrimmedMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"TrimmedMass") )
 				hJet1PrunedMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"PrunedMass") )
 				hJet1SoftDropMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"SoftDropMass") )
+
+	j=0
+	for subjet in subjets:
+		j+=1
+		hSubJetsTau1.Fill( subjet.userFloat("NjettinessAK8"+PUMethod+"Pruned:tau1") )
+	hNumSubjets.Fill( j )
+
 
 #CLEANUP
 outputFile.Write()
