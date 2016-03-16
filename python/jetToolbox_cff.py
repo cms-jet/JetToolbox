@@ -28,6 +28,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		runOnMC=True,
 		JETCorrPayload='', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
 		Cut = '', 
+    bTagInfos = None,
 		bTagDiscriminators = None, 
 		subJETCorrPayload='', subJETCorrLevels = [ 'None' ], GetSubjetMCFlavour=False,
 		CutSubjet = '', 
@@ -303,11 +304,13 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			pvSource = cms.InputTag( pvLabel ), 
 			muSource = cms.InputTag( muLabel ),
 			elSource = cms.InputTag( elLabel ),
+      btagInfos = bTagInfos,
 			btagDiscriminators = bTagDiscriminators,
 			getJetMCFlavour = GetJetMCFlavour,
 			genParticles = cms.InputTag(genParticlesLabel),
 			outputModules = ['outputFile']
 			) 
+  getattr(proc,'patJets'+jetALGO+'PF'+PUMethod).addTagInfos = cms.bool(True)
 
 
 	if 'CS' in PUMethod: getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
@@ -385,6 +388,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					svSource = cms.InputTag( svLabel ),  
 					muSource = cms.InputTag( muLabel ),
 					elSource = cms.InputTag( elLabel ),
+          btagInfos = bTagInfos,
 					btagDiscriminators = bTagDiscriminators,
 					genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNuSoftDrop','SubJets'),
 					getJetMCFlavour = GetSubjetMCFlavour,
@@ -396,6 +400,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					) 
 
+      getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets').addTagInfos = cms.bool(True)
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', cut = Cut ))
 
 			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
@@ -476,6 +481,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					elSource = cms.InputTag( elLabel ),
 					getJetMCFlavour = GetSubjetMCFlavour,
 					genParticles = cms.InputTag(genParticlesLabel),
+          btagInfos = bTagInfos,
 					btagDiscriminators = bTagDiscriminators,
 					genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNuPruned','SubJets'),
 					explicitJTA = True,  # needed for subjet b tagging
@@ -485,6 +491,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					) 
 
+      getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets').addTagInfos = cms.bool(True)
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', cut = Cut ) )
 
 			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
@@ -593,6 +600,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					svSource = cms.InputTag( svLabel ), 
 					muSource = cms.InputTag( muLabel ),
 					elSource = cms.InputTag( elLabel ),
+          btagInfos = bTagInfos,
 					btagDiscriminators = bTagDiscriminators,
 					genJetCollection = cms.InputTag(jetalgo+'GenJetsNoNu'),
 					getJetMCFlavour = False, # jet flavor should always be disabled for groomed jets
@@ -614,6 +622,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					svSource = cms.InputTag( svLabel ), 
 					muSource = cms.InputTag( muLabel ),
 					elSource = cms.InputTag( elLabel ),
+          btagInfos = bTagInfos,
 					btagDiscriminators = bTagDiscriminators,
 					genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNu'),
 					getJetMCFlavour = GetSubjetMCFlavour,
@@ -624,6 +633,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					genParticles = cms.InputTag(genParticlesLabel)
 					)
 
+      getattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+'Subjets' ).addTagInfos = cms.bool(True)
 			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+'Subjets', selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod+'Subjets', cut = Cut ) )
 
 			setattr( proc, 'patJetsCMSTopTag'+PUMethod+'Packed', 
