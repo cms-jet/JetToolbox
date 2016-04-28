@@ -706,10 +706,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		if addSoftDropSubjets: groomer = 'SoftDrop'
 		elif addPrunedSubjets: groomer = 'Pruned'
-		typeSubjetColl = jetALGO+'PF'+PUMethod+groomer 
+		typeSubjetColl = jetALGO+'PF'+PUMethod+groomer+'Subjets'
 		rangeTau = range(1,subjetMaxTau+1)
 		setattr( proc, 'Nsubjettiness'+typeSubjetColl, 
-				Njettiness.clone( src = cms.InputTag( jetalgo+'PFJets'+PUMethod+groomer ), 
+				Njettiness.clone( src = cms.InputTag( jetalgo+'PFJets'+PUMethod+groomer,'SubJets' ), 
 					Njets=cms.vuint32(rangeTau),         # compute 1-, 2-, 3-, 4- subjettiness
 					# variables for measure definition : 
 					measureDefinition = cms.uint32( 0 ), # CMS default is normalized measure
