@@ -399,7 +399,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					) 
 
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', cut = Cut ))
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', cut = CutSubjet ))
 			getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets').addTagInfos = cms.bool(True)
 
 			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
@@ -490,7 +490,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					) 
 
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', cut = Cut ) )
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', selectedPatJets.clone( src = 'patJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', cut = CutSubjet ) )
 			getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets').addTagInfos = cms.bool(True)
 
 			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
