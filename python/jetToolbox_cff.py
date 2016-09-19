@@ -179,7 +179,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		else: 
 			proc.load('CommonTools.PileupAlgos.Puppi_cff')
 			puppi.candName = cms.InputTag( pfCand ) 
-			if miniAOD: puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
+			if miniAOD:
+			  puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
+			  puppi.clonePackedCands = cms.bool(True)
 			jetSeq += getattr(proc, 'puppi' )
 			srcForPFJets = 'puppi'
 
@@ -768,7 +770,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			
 	####### Pileup JetID
         if addPUJetID:
-                if ( 'ak4' in jetalgo ) and ( 'CHS' in PUMethod ):
+                if ( 'ak4' in jetalgo ) and ( PUMethod not in ['CS','SK'] ):
+		        if PUMethod=="Puppi":
+                           print '|---- jetToolBox: PUJetID is not yet optimized for ak4 PFjets with PUPPI. USE ONLY FOR TESTING.'
                         from RecoJets.JetProducers.pileupjetidproducer_cfi import pileupJetIdCalculator,pileupJetIdEvaluator
 
 			setattr( proc, jetALGO+'PF'+PUMethod+'pileupJetIdCalculator',
