@@ -15,7 +15,6 @@ To test the toolbox:
 cmsRun JMEAnalysis/JetToolbox/test/jetToolbox_cfg.py
 ```
 In that python file you also can see a basic example on how to use the toolbox.
-#If you are going to use Puppi, please make sure to follow this instructions: https://twiki.cern.ch/twiki/bin/viewauth/CMS/PUPPI#Using_PUPPI
 
 ## More Information
 
