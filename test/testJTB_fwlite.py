@@ -32,8 +32,7 @@ handle = Handle("std::vector<pat::Jet>")
 label = ("selectedPatJetsAK8PF"+PUMethod) 
 
 handleSubjets = Handle("std::vector<pat::Jet>")
-labelSubjets = ("selectedPatJetsAK8PF"+PUMethod+'PrunedPacked') 
-
+labelSubjets = ("selectedPatJetsAK8PF"+PUMethod+'PrunedPacked', 'SubJets' ) 
 
 # loop over events in this file
 nevents = 0
@@ -70,7 +69,7 @@ for event in events:
 	j=0
 	for subjet in subjets:
 		j+=1
-		hSubJetsTau1.Fill( subjet.userFloat("NjettinessAK8"+PUMethod+"Pruned:tau1") )
+		hSubJetsTau1.Fill( subjet.userFloat("NsubjettinessAK8PF"+PUMethod+"PrunedSubjets:tau1") )
 	hNumSubjets.Fill( j )
 
 
