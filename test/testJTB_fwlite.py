@@ -25,14 +25,14 @@ hNumSubjets = ROOT.TH1F("hNumSubJets", ";Number of Subjets", 10, 0, 10 )
 hSubJetsTau1 = ROOT.TH1F("hSubJetsTau1", ";#tau_{1}", 10, 0, 1 )
 
 #EVENT LOOP
-events = Events ('jettoolbox.root')
+events = Events ('jettoolboxNOUpdate.root')
 PUMethod = 'CHS'
 
 handle = Handle("std::vector<pat::Jet>")
 label = ("selectedPatJetsAK8PF"+PUMethod) 
 
 handleSubjets = Handle("std::vector<pat::Jet>")
-labelSubjets = ("selectedPatJetsAK8PF"+PUMethod+'PrunedPacked', 'SubJets' ) 
+labelSubjets = ("selectedPatJetsAK8PF"+PUMethod+'SoftDropPacked', 'SubJets' ) 
 
 # loop over events in this file
 nevents = 0
@@ -49,8 +49,11 @@ for event in events:
 
 	i = 0
 	for jet in jets:
-		if ( jet.pt() > 50 ) and ( abs( jet.eta() ) < 2.5 ):
-			#print jet.pt(), jet.chargedHadronEnergyFraction()
+		#print jet.userFloat("QGTaggerAK4PFCHS:qgLikelihood"), jet.bDiscriminator('pfCombinedInclusiveSecondaryVertexV2BJetTags')
+		if ( jet.pt() > 170 ) and ( abs( jet.eta() ) < 2.5 ):
+			#print jet.pt(), jet.chargedHadronEnergyFraction(), jet.userFloat("ak8PFJets"+PUMethod+"TrimmedMass"), jet.userFloat("ak8PFJets"+PUMethod+"PrunedMass")
+			#print jet.userFloat("ak8PFJets"+PUMethod+"TrimmedMass"), jet.userFloat("ak8PFJets"+PUMethod+"PrunedMass"), jet.userFloat('NjettinessAK8:tau1'), jet.bDiscriminator('pfCombinedInclusiveSecondaryVertexV2BJetTags')
+
 			hJetsPt.Fill( jet.pt() )
 			hJetsCHF.Fill( jet.chargedHadronEnergyFraction() )
 			hJetsCSV.Fill( jet.bDiscriminator('pfCombinedInclusiveSecondaryVertexV2BJetTags') )
@@ -69,7 +72,8 @@ for event in events:
 	j=0
 	for subjet in subjets:
 		j+=1
-		hSubJetsTau1.Fill( subjet.userFloat("NsubjettinessAK8PF"+PUMethod+"PrunedSubjets:tau1") )
+		#print j, subjet.userFloat("NsubjettinessAK8PF"+PUMethod+"SoftDropSubjets:tau1")
+		hSubJetsTau1.Fill( subjet.userFloat("NsubjettinessAK8PF"+PUMethod+"SoftDropSubjets:tau1") )
 	hNumSubjets.Fill( j )
 
 
