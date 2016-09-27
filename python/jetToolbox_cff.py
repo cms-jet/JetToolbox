@@ -97,20 +97,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	tvLabel = ''
 	toolsUsed = []
 
-	## b-tag discriminators
-	if bTagDiscriminators is None:
-		bTagDiscriminators = [
-				'pfTrackCountingHighEffBJetTags',
-				'pfTrackCountingHighPurBJetTags',
-				'pfJetProbabilityBJetTags',
-				'pfJetBProbabilityBJetTags',
-				'pfSimpleSecondaryVertexHighEffBJetTags',
-				'pfSimpleSecondaryVertexHighPurBJetTags',
-				'pfCombinedSecondaryVertexV2BJetTags',
-				'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-				'pfCombinedMVAV2BJetTags'
-	    	]
-
 	### List of Jet Corrections
 	if not set(JETCorrLevels).issubset(set(JECLevels)): 
 		if ( 'CHS' in PUMethod ) or  ( 'Plain' in PUMethod ): JETCorrLevels = ['L1FastJet','L2Relative', 'L3Absolute']
@@ -123,6 +109,21 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 
 	if not updateCollection: 
+
+		## b-tag discriminators
+		if bTagDiscriminators is None:
+			bTagDiscriminators = [
+					'pfTrackCountingHighEffBJetTags',
+					'pfTrackCountingHighPurBJetTags',
+					'pfJetProbabilityBJetTags',
+					'pfJetBProbabilityBJetTags',
+					'pfSimpleSecondaryVertexHighEffBJetTags',
+					'pfSimpleSecondaryVertexHighPurBJetTags',
+					'pfCombinedSecondaryVertexV2BJetTags',
+					'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+					'pfCombinedMVAV2BJetTags'
+			]
+
 		#### For MiniAOD
 		if miniAOD:
 
@@ -281,6 +282,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PF'
 			if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PF'
 
+
 		if 'None' in JETCorrPayload: JEC = None
 		else: JEC = ( JETCorrPayload.replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )   ### temporary
 		#else: JEC = ( JETCorrPayload., JETCorrLevels, 'None' ) 
@@ -339,7 +341,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				jetSource = cms.InputTag( updateCollection ),
 				labelName = jetALGO+'PF'+PUMethod,
 				jetCorrections = JEC, 
-		#		btagDiscriminators = bTagDiscriminators,
+				btagDiscriminators = bTagDiscriminators,
 				)
 		patJets = 'updatedPatJets'
 
@@ -571,7 +573,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		setattr( proc, jetalgo+'PFJets'+PUMethod+'Trimmed', 
 				ak8PFJetsCHSTrimmed.clone( 
 					rParam = jetSize, 
-					src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents', 'constituents') if not updateCollection else updateCollection ),
+					src = cms.InputTag( jetalgo+'PFJets'+PUMethod+'Constituents', 'constituents' if not updateCollection else updateCollection ),
 					jetAlgorithm = algorithm,
 					rFilt= rFiltTrim,
 					trimPtFracMin= ptFrac) ) 
@@ -591,7 +593,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		setattr( proc, jetalgo+'PFJets'+PUMethod+'Filtered', 
 				ak8PFJetsCHSFiltered.clone( 
-					src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents', 'constituents') if not updateCollection else updateCollection ),
+					src = cms.InputTag( jetalgo+'PFJets'+PUMethod+'Constituents', 'constituents' if not updateCollection else updateCollection ),
 					rParam = jetSize, 
 					jetAlgorithm = algorithm,
 					rFilt= rfilt,
