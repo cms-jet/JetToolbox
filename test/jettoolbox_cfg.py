@@ -34,9 +34,12 @@ from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='SK', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, JETCorrLevels=['L1FastJet', 'L2Relative'] ) 
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True ) 
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, addNsubSubjets=True ) 
-jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True,  addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, addNsubSubjets=True ) 
-#jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', updateCollection='slimmedJets', addQGTagger=True ) #,  addNsub=True, maxTau=6 )  #PUMethod='CHS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addTrimming=True, addFiltering=True, addNsubSubjets=True ) 
-#jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', updateCollection='slimmedJets', addQGTagger=True ) #,  addNsub=True, maxTau=6 )  #PUMethod='CHS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addTrimming=True, addFiltering=True, addNsubSubjets=True ) 
+#jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', addPruning=True, addSoftDrop=True , addSoftDropSubjets=True,  addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, addNsubSubjets=True ) 
+jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', updateCollection='slimmedJetsAK8', JETCorrPayload='AK8PFchs', addEnergyCorrFunc=True, updateCollectionSubjets='slimmedJetsAK8PFCHSSoftDropPacked', addNsubSubjets=True, addTrimming=True, addFiltering=True, addPruning=True, addSoftDrop=True )  #PUMethod='CHS', addPrunedSubjets=True, subJETCorrPayload='AK4PFchs' ) 
+
+#jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', updateCollection='slimmedJetsAK8', addEnergyCorrFunc=True,  addNsub=True, maxTau=6 )  #PUMethod='CHS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addTrimming=True, addFiltering=True, addNsubSubjets=True ) 
+#jetToolbox( process, 'ak4', 'ak4JetSubsUpdate', 'out', updateCollection='slimmedJets', JETCorrPayload = 'AK4PFchs', addQGTagger=True, addPUJetID=True ) 
+#jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', addQGTagger=True, addPUJetID=True ) 
 
 
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, miniAOD=False ) 
