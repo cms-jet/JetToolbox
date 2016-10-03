@@ -729,7 +729,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if addHEPTopTagger: 
 		if ( jetSize >= 1. ) and ( 'CA' in jetALGO ): 
 
-			setattr( proc, 'hepTopTagPFJets'+PUMethod, hepTopTagPFJetsCHS.clone( src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents' if not updateCollection else updateCollection ), ( 'constituents' if not updateCollection else '' ) ),
+			setattr( proc, 'hepTopTagPFJets'+PUMethod, hepTopTagPFJetsCHS.clone( src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents' if not updateCollection else updateCollection ), ( 'constituents' if not updateCollection else '' ) ) ) )
 			setattr( proc, 'hepTopTagPFJets'+PUMethod+'Mass'+jetALGO, ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag( jetalgo+'PFJets'+PUMethod), 
 				matched = cms.InputTag("hepTopTagPFJets"+PUMethod), distMax = cms.double( jetSize ) ) )
 			elemToKeep += [ 'keep *_hepTopTagPFJets'+PUMethod+'Mass'+jetALGO+'_*_*' ]
