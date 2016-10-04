@@ -386,6 +386,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				R0= cms.double(jetSize),
 				#zcut=zCutSD, 
 				beta=betaCut,
+				doAreaFastjet = cms.bool(True),
 				writeCompound = cms.bool(True),
 				jetCollInstanceName=cms.string('SubJets') ) )
 		setattr( proc, jetalgo+'PFJets'+PUMethod+'SoftDropMass', 
