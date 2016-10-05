@@ -26,7 +26,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		newPFCollection=False, nameNewPFCollection = '',	
 		PUMethod='CHS', 
 		miniAOD=True,
-		runOnMC=True,
+		runOnMC=True, 
+    jetRadius=0.4, ### To be specified for rerunning b tagging on subjets
+    algoLabel='', #### To be specified for rerunning b tagging on subjets 
+    fatJetSource='',  ### To be specified for rerunning b tagging on subjets
 		JETCorrPayload='', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
 		Cut = '', 
 		bTagDiscriminators = None, 
@@ -351,9 +354,13 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			print '|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollection+' collection for subjets/groomers.'
 			updateJetCollection(
 					proc,
-					jetSource = cms.InputTag( updateCollectionSubjets, 'SubJets' ),
+					jetSource = cms.InputTag( updateCollectionSubjets ),
 					labelName = jetALGO+'PF'+PUMethod+'SoftDropPacked',
 					jetCorrections = JEC, 
+          explicitJTA = True,
+          fatJets = cms.InputTag(fatJetSource),
+          rParam=jetRadius,
+          algo=algoLabel,
 		 			btagDiscriminators = bTagDiscriminators,
 					)
 			patSubJets = 'updatedPatJetsAK8PFCHSSoftDropPacked'
