@@ -354,7 +354,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetSource = cms.InputTag( updateCollectionSubjets, 'SubJets' ),
 					labelName = jetALGO+'PF'+PUMethod+'SoftDropPacked',
 					jetCorrections = JEC, 
-		#			btagDiscriminators = bTagDiscriminators,
+		 			btagDiscriminators = bTagDiscriminators,
 					)
 			patSubJets = 'updatedPatJetsAK8PFCHSSoftDropPacked'
 
