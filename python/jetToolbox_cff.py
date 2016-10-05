@@ -343,6 +343,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				jetCorrections = JEC, 
 				btagDiscriminators = bTagDiscriminators,
 				)
+		getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod ).payload = JETCorrPayload
+		getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod ).levels = JETCorrLevels
 		patJets = 'updatedPatJets'
 
 		if updateCollectionSubjets:
