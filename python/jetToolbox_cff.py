@@ -22,8 +22,7 @@ from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection, updateJetColl
 
 
 def jetToolbox( proc, jetType, jetSequence, outputFile,
-		updateCollection='', 
-		updateCollectionSubjets='', subjetSize = 0.4,
+		updateCollection='', updateCollectionSubjets='',
 		newPFCollection=False, nameNewPFCollection = '',	
 		PUMethod='CHS', 
 		miniAOD=True,
@@ -346,6 +345,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				)
 		getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod ).payload = JETCorrPayload
 		getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod ).levels = JETCorrLevels
+		if bTagDiscriminators: print '|---- jetToolBox: Adding this bTagDiscriminators: '+str(bTagDiscriminators)+' in the jet collection.'
 		patJets = 'updatedPatJets'
 
 		if updateCollectionSubjets:
@@ -359,20 +359,21 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					jetCorrections = JEC, 
 					explicitJTA = True,
 					fatJets = cms.InputTag( updateCollection ),
-					rParam = subjetSize,
+					rParam = jetSize, 
 					algo = jetALGO,
 					btagDiscriminators = bTagDiscriminators,
 					)
 			getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed' ).payload = subJETCorrPayload
 			getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed' ).levels = subJETCorrLevels
 			patSubJets = 'updatedPatJets'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed'
+			if bTagDiscriminators: print '|---- jetToolBox: Adding this bTagDiscriminators: '+str(bTagDiscriminators)+' in the subjet collection.'
 
 		if addPrunedSubjets: 
 			addPrunedSubjets = False
-			print '|---- jetToolBox: It does not support addPruning/addPrunedSubjets with updateCollection option for now. Disabling addPruning/addPrunedSubjets.'
+			print '|---- jetToolBox: It does not support addPrunedSubjets with updateCollection option for now. Disabling addPrunedSubjets.'
 		if addSoftDropSubjets: 
 			addSoftDropSubjets = False
-			print '|---- jetToolBox: It does not support addSoftDrop/addSoftDropSubjets with updateCollection option for now. Disabling addSoftDrop/addSoftDropSubjets.'
+			print '|---- jetToolBox: It does not support addSoftDropSubjets with updateCollection option for now. Disabling addSoftDropSubjets.'
 		if addCMSTopTagger: 
 			addCMSTopTagger = False
 			print '|---- jetToolBox: It does not support addCMSTopTagger with updateCollection option for now. Disabling addCMSTopTagger.'
@@ -909,6 +910,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	if len(toolsUsed) > 0 : print '|---- jetToolBox: Running '+', '.join(toolsUsed)+'.'
 	print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+' collection.'
+	if updateCollectionSubjets: print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed collection.'
 
 	### "return"
 	setattr(proc, jetSequence, jetSeq)
