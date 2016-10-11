@@ -394,7 +394,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				jetAlgorithm = algorithm, 
 				useExplicitGhosts=True,
 				R0= cms.double(jetSize),
-				#zcut=zCutSD, 
+				zcut=zCutSD, 
 				beta=betaCut,
 				doAreaFastjet = cms.bool(True),
 				writeCompound = cms.bool(True),
@@ -483,6 +483,24 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked_*_*' ]
 			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked' )
 			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets' )
+
+                        ## Pack fat jets with subjets
+			setattr( proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop', 
+				 cms.EDProducer("JetSubstructurePacker",
+						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod),
+						distMax = cms.double( jetSize ),
+						fixDaughters = cms.bool(False),
+						algoTags = cms.VInputTag(
+						cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked')
+						), 
+						algoLabels =cms.vstring('SoftDrop')
+						)
+				 )
+			jetSeq += getattr(proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop')
+			elemToKeep += [ 'keep *_packedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop_*_*' ]
+			toolsUsed.append( 'packedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop' )
+
+
 
 	if addPruning or addPrunedSubjets: 
 
@@ -575,6 +593,22 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedPacked_*_*' ]
 			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedPacked' )
 			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets' )
+
+                        ## Pack fat jets with subjets
+			setattr( proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+'Pruned', 
+				 cms.EDProducer("JetSubstructurePacker",
+						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod),
+						distMax = cms.double( jetSize ),
+						fixDaughters = cms.bool(False),
+						algoTags = cms.VInputTag(
+						cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedPacked')
+						), 
+						algoLabels =cms.vstring('Pruned')
+						)
+				 )
+			jetSeq += getattr(proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+'Pruned')
+			elemToKeep += [ 'keep *_packedPatJets'+jetALGO+'PF'+PUMethod+'Pruned_*_*' ]
+			toolsUsed.append( 'packedPatJets'+jetALGO+'PF'+PUMethod+'Pruned' )
 
 
 	if addTrimming:
