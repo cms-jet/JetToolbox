@@ -394,7 +394,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				jetAlgorithm = algorithm, 
 				useExplicitGhosts=True,
 				R0= cms.double(jetSize),
-				#zcut=zCutSD, 
+				zcut=zCutSD, 
 				beta=betaCut,
 				doAreaFastjet = cms.bool(True),
 				writeCompound = cms.bool(True),
@@ -483,6 +483,25 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked_*_*' ]
 			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked' )
 			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets' )
+
+                        ## Pack fat jets with subjets
+			setattr( proc, 'packedPatJets'+jetALGO+'PF'+PUMethod, 
+				 cms.EDProducer("JetSubstructurePacker",
+						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod),
+						distMax = cms.double(0.8),
+						fixDaughters = cms.bool(False),
+						algoTags = cms.VInputTag(
+						cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked')
+						), 
+						algoLabels =cms.vstring('SoftDrop'
+									)
+						)
+				 )
+			jetSeq += getattr(proc, 'packedPatJets'+jetALGO+'PF'+PUMethod)
+			elemToKeep += [ 'keep *_packedPatJets'+jetALGO+'PF'+PUMethod+'_*_*' ]
+			toolsUsed.append( 'packedPatJets'+jetALGO+'PF'+PUMethod )
+
+
 
 	if addPruning or addPrunedSubjets: 
 
