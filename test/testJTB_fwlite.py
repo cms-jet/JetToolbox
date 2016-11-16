@@ -25,14 +25,14 @@ hNumSubjets = ROOT.TH1F("hNumSubJets", ";Number of Subjets", 10, 0, 10 )
 hSubJetsTau1 = ROOT.TH1F("hSubJetsTau1", ";#tau_{1}", 10, 0, 1 )
 
 #EVENT LOOP
-events = Events ('jettoolboxNOUpdate.root')
+events = Events ('jettoolbox.root')
 PUMethod = 'CHS'
 
 handle = Handle("std::vector<pat::Jet>")
 label = ("selectedPatJetsAK8PF"+PUMethod) 
+#label = ('packedPatJetsAK8PFCHSSoftDrop') 
+#label = ('packedPatJetsAK8PFCHSPruned') 
 
-handleSubjets = Handle("std::vector<pat::Jet>")
-labelSubjets = ("selectedPatJetsAK8PF"+PUMethod+'SoftDropPacked', 'SubJets' ) 
 
 # loop over events in this file
 nevents = 0
@@ -44,9 +44,13 @@ for event in events:
 	event.getByLabel( label, handle )
 	jets = handle.product()
 
-	event.getByLabel( labelSubjets, handleSubjets )
-	subjets = handleSubjets.product()
+	#event.getByLabel( labelSubjets, handleSubjets )
+	#subjets = handleSubjets.product()
 
+	for i,j in enumerate(jets):
+		print "jetAK8 %3d: pt %5.1f (raw pt %5.1f), eta %+4.2f, mass %5.1f ungroomed, %5.1f softdrop, %5.1f pruned, %5.1f trimmed, %5.1f filtered. " % ( i, j.pt(), j.pt()*j.jecFactor('Uncorrected'), j.eta(), j.mass(), j.userFloat('ak8PFJetsCHSSoftDropMass'), j.userFloat('ak8PFJetsCHSPrunedMass'), j.userFloat('ak8PFJetsCHSTrimmedMass'), j.userFloat('ak8PFJetsCHSFilteredMass'))
+			          
+		'''
 	i = 0
 	for jet in jets:
 		#print jet.userFloat("QGTaggerAK4PFCHS:qgLikelihood"), jet.bDiscriminator('pfCombinedInclusiveSecondaryVertexV2BJetTags')
@@ -69,12 +73,13 @@ for event in events:
 				hJet1PrunedMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"PrunedMass") )
 				hJet1SoftDropMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"SoftDropMass") )
 
-	j=0
-	for subjet in subjets:
-		j+=1
-		#print j, subjet.userFloat("NsubjettinessAK8PF"+PUMethod+"SoftDropSubjets:tau1")
-		hSubJetsTau1.Fill( subjet.userFloat("NsubjettinessAK8PF"+PUMethod+"SoftDropSubjets:tau1") )
-	hNumSubjets.Fill( j )
+		'''
+			
+		wSubjets = j.subjets('SoftDrop')
+		#wSubjets = j.subjets('Pruned')
+		for iw,wsub in enumerate( wSubjets ) :
+			print "   w subjet %3d: pt %5.1f (raw pt %5.1f), eta %+4.2f, mass %5.1f " % (
+			iw, wsub.pt(), wsub.pt()*wsub.jecFactor('Uncorrected'), wsub.eta(), wsub.mass() )
 
 
 #CLEANUP

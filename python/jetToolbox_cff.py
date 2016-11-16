@@ -29,6 +29,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		runOnMC=True,
 		JETCorrPayload='', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
 		Cut = '', 
+		postFix='',
 		bTagDiscriminators = None, 
 		bTagInfos = None, 
 		subJETCorrPayload='', subJETCorrLevels = [ 'None' ], GetSubjetMCFlavour=True,
@@ -301,6 +302,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				proc,
 				labelName = jetALGO+'PF'+PUMethod,
 				jetSource = cms.InputTag( jetalgo+'PFJets'+PUMethod),
+				postfix = postFix, 
 				algo = jetalgo,
 				rParam = jetSize,
 				jetCorrections = JEC if JEC is not None else None, 
@@ -316,10 +318,11 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				genParticles = cms.InputTag(genParticlesLabel),
 				outputModules = ['outputFile']
 				) 
-		getattr(proc,'patJets'+jetALGO+'PF'+PUMethod).addTagInfos = cms.bool(True)
+		getattr(proc,'patJets'+jetALGO+'PF'+PUMethod+postFix).addTagInfos = cms.bool(True)
 
-		if 'CS' in PUMethod: getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
+		if 'CS' in PUMethod: getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod+postFix ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
 		patJets = 'patJets'
+		patSubJets = ''
 	else:
 		print '|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollection+' collection'
 		genParticlesLabel = 'prunedGenParticles'
@@ -338,15 +341,17 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		print '|---- jetToolBox: Applying this corrections: '+str(JEC)
 		updateJetCollection(
 				proc,
+				postfix = postFix,
 				jetSource = cms.InputTag( updateCollection ),
 				labelName = jetALGO+'PF'+PUMethod,
 				jetCorrections = JEC, 
 				btagDiscriminators = bTagDiscriminators,
 				)
-		getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod ).payload = JETCorrPayload
-		getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod ).levels = JETCorrLevels
+		getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod+postFix ).payload = JETCorrPayload
+		getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod+postFix ).levels = JETCorrLevels
 		if bTagDiscriminators: print '|---- jetToolBox: Adding this bTagDiscriminators: '+str(bTagDiscriminators)+' in the jet collection.'
 		patJets = 'updatedPatJets'
+		patSubJets = ''
 
 		if updateCollectionSubjets:
 			print '|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollectionSubjets+' collection for subjets/groomers.'
@@ -355,7 +360,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			updateJetCollection(
 					proc,
 					jetSource = cms.InputTag( updateCollectionSubjets ),
-					labelName = jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed',
+					labelName = jetALGO+'PF'+PUMethod+postFix+updateSubjetLabel+'Packed',
 					jetCorrections = JEC, 
 					explicitJTA = True,
 					fatJets = cms.InputTag( updateCollection ),
@@ -363,31 +368,18 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					algo = jetALGO,
 					btagDiscriminators = bTagDiscriminators,
 					)
-			getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed' ).payload = subJETCorrPayload
-			getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed' ).levels = subJETCorrLevels
-			patSubJets = 'updatedPatJets'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed'
+			getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod+postFix+updateSubjetLabel+'Packed' ).payload = subJETCorrPayload
+			getattr( proc, 'patJetCorrFactors'+jetALGO+'PF'+PUMethod+postFix+updateSubjetLabel+'Packed' ).levels = subJETCorrLevels
+			patSubJets = 'updatedPatJets'+jetALGO+'PF'+PUMethod+postFix+updateSubjetLabel+'Packed'
 			if bTagDiscriminators: print '|---- jetToolBox: Adding this bTagDiscriminators: '+str(bTagDiscriminators)+' in the subjet collection.'
 
-		if addPrunedSubjets: 
-			addPrunedSubjets = False
-			print '|---- jetToolBox: It does not support addPrunedSubjets with updateCollection option for now. Disabling addPrunedSubjets.'
-		if addSoftDropSubjets: 
-			addSoftDropSubjets = False
-			print '|---- jetToolBox: It does not support addSoftDropSubjets with updateCollection option for now. Disabling addSoftDropSubjets.'
-		if addCMSTopTagger: 
-			addCMSTopTagger = False
-			print '|---- jetToolBox: It does not support addCMSTopTagger with updateCollection option for now. Disabling addCMSTopTagger.'
-		if addMassDrop: 
-			addMassDrop = False
-			print '|---- jetToolBox: It does not support addMassDrop with updateCollection option for now. Disabling addMassDrop.'
-		if addHEPTopTagger: 
-			addHEPTopTagger = False
-			print '|---- jetToolBox: It does not support addHEPTopTagger with updateCollection option for now. Disabling addHEPTopTagger.'
+		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger or addMassDrop or addHEPTopTagger or addPruning or addSoftDrop: 
+			print '|---- jetToolBox: You are trying to add a groomer variable into a clustered jet collection. THIS IS NOT RECOMMENDED, it is recommended to recluster jets instead using a plain jetToolbox configuration. Please use this feature by your own risk.'
 	
 	#### Groomers
 	if addSoftDrop or addSoftDropSubjets: 
 
-		setattr( proc, jetalgo+'PFJets'+PUMethod+'SoftDrop', 
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop', 
 			ak8PFJetsCHSSoftDrop.clone( 
 				src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents:constituents' if not updateCollection else updateCollection ) ),
 				rParam = jetSize, 
@@ -399,16 +391,16 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				doAreaFastjet = cms.bool(True),
 				writeCompound = cms.bool(True),
 				jetCollInstanceName=cms.string('SubJets') ) )
-		setattr( proc, jetalgo+'PFJets'+PUMethod+'SoftDropMass', 
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'SoftDropMass', 
 			ak8PFJetsCHSSoftDropMass.clone( src = cms.InputTag( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ), 
-				matched = cms.InputTag( jetalgo+'PFJets'+PUMethod+'SoftDrop'), 
+				matched = cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'), 
 				distMax = cms.double( jetSize ) ) )
 
-		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+'SoftDropMass_*_*'] 
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'SoftDrop' )
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'SoftDropMass' )
-		getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+'SoftDropMass']
-		toolsUsed.append( jetalgo+'PFJets'+PUMethod+'SoftDropMass' )
+		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+postFix+'SoftDropMass_*_*'] 
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop' )
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'SoftDropMass' )
+		getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+postFix+'SoftDropMass']
+		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'SoftDropMass' )
 
 		if addSoftDropSubjets:
 
@@ -431,8 +423,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			addJetCollection(
 					proc,
-					labelName = jetALGO+'PF'+PUMethod+'SoftDrop',
-					jetSource = cms.InputTag( jetalgo+'PFJets'+PUMethod+'SoftDrop'),
+					labelName = jetALGO+'PF'+PUMethod+postFix+'SoftDrop',
+					jetSource = cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'),
 					algo = jetalgo,
 					rParam = jetSize,
 					jetCorrections = JEC if JEC is not None else None, 
@@ -444,12 +436,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					) 
 
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+'SoftDrop', cut = Cut ) )
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDrop', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+postFix+'SoftDrop', cut = Cut ) )
 
 			addJetCollection(
 					proc,
-					labelName = jetALGO+'PF'+PUMethod+'SoftDropSubjets',
-					jetSource = cms.InputTag( jetalgo+'PFJets'+PUMethod+'SoftDrop', 'SubJets'),
+					labelName = jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets',
+					jetSource = cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop', 'SubJets'),
 					algo = jetalgo,  # needed for subjet b tagging
 					rParam = jetSize,  # needed for subjet b tagging
 					jetCorrections = subJEC if subJEC is not None else None, 
@@ -466,45 +458,44 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					explicitJTA = True,  # needed for subjet b tagging
 					svClustering = True, # needed for subjet b tagging
 					fatJets=cms.InputTag(jetalgo+'PFJets'+PUMethod),             # needed for subjet flavor clustering
-					groomedFatJets=cms.InputTag(jetalgo+'PFJets'+PUMethod+'SoftDrop'), # needed for subjet flavor clustering
+					groomedFatJets=cms.InputTag(jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'), # needed for subjet flavor clustering
 					outputModules = ['outputFile']
 					) 
 
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+'SoftDropSubjets', cut = CutSubjet ))
-			getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets').addTagInfos = cms.bool(True)
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets', cut = CutSubjet ))
+			getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets').addTagInfos = cms.bool(True)
 
-			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked', 
+			# Establish references between PATified fat jets and subjets using the BoostedJetMerger
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropPacked', 
 					cms.EDProducer("BoostedJetMerger",
-						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop'),
-						subjetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets')
+						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDrop'),
+						subjetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets')
 						))
-			jetSeq += getattr(proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked' )
-			elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked_*_*' ]
-			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked' )
-			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropSubjets' )
+			jetSeq += getattr(proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropPacked' )
+			elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropPacked_SubJets_*' ]
+			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropPacked:SubJets' )
 
                         ## Pack fat jets with subjets
-			setattr( proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop', 
+			setattr( proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDrop', 
 				 cms.EDProducer("JetSubstructurePacker",
-						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod),
+						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+postFix),
 						distMax = cms.double( jetSize ),
 						fixDaughters = cms.bool(False),
 						algoTags = cms.VInputTag(
-						cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+'SoftDropPacked')
+						cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropPacked')
 						), 
 						algoLabels =cms.vstring('SoftDrop')
 						)
 				 )
-			jetSeq += getattr(proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop')
-			elemToKeep += [ 'keep *_packedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop_*_*' ]
-			toolsUsed.append( 'packedPatJets'+jetALGO+'PF'+PUMethod+'SoftDrop' )
+			jetSeq += getattr(proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDrop')
+			elemToKeep += [ 'keep *_packedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDrop_*_*' ]
+			print '|---- jetToolBox: Creating packedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDrop collection with SoftDrop subjets.'
 
 
 
 	if addPruning or addPrunedSubjets: 
 
-		setattr( proc, jetalgo+'PFJets'+PUMethod+'Pruned', 
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'Pruned', 
 			ak8PFJetsCHSPruned.clone( 
 				src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents:constituents' if not updateCollection else updateCollection ) ),
 				rParam = jetSize, 
@@ -514,17 +505,17 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				writeCompound = cms.bool(True),
 				doAreaFastjet = cms.bool(True),
 				jetCollInstanceName=cms.string('SubJets') ) )
-		setattr( proc, jetalgo+'PFJets'+PUMethod+'PrunedMass', 
-			ak8PFJetsCHSPrunedMass.clone( #src = cms.InputTag( jetalgo+'PFJets'+PUMethod), 
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'PrunedMass', 
+			ak8PFJetsCHSPrunedMass.clone( 
 				src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ), 
-				matched = cms.InputTag( jetalgo+'PFJets'+PUMethod+'Pruned'), 
+				matched = cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix+'Pruned'), 
 				distMax = cms.double( jetSize ) ) )
 
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'Pruned' )
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'PrunedMass' )
-		getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+'PrunedMass']
-		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+'PrunedMass_*_*'] 
-		toolsUsed.append( jetalgo+'PFJets'+PUMethod+'PrunedMass' )
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'Pruned' )
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'PrunedMass' )
+		getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+postFix+'PrunedMass']
+		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+postFix+'PrunedMass_*_*'] 
+		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'PrunedMass' )
 
 		if addPrunedSubjets:
 			if runOnMC:
@@ -541,8 +532,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			addJetCollection(
 					proc,
-					labelName = jetALGO+'PF'+PUMethod+'Pruned',
-					jetSource = cms.InputTag( jetalgo+'PFJets'+PUMethod+'Pruned'),
+					labelName = jetALGO+'PF'+PUMethod+postFix+'Pruned',
+					jetSource = cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix+'Pruned'),
 					algo = jetalgo,
 					rParam = jetSize,
 					jetCorrections = JEC if JEC is not None else None, 
@@ -554,12 +545,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					) 
 
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'Pruned', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+'Pruned', cut = Cut ) )
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'Pruned', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+postFix+'Pruned', cut = Cut ) )
 
 			addJetCollection(
 					proc,
-					labelName = jetALGO+'PF'+PUMethod+'PrunedSubjets',
-					jetSource = cms.InputTag( jetalgo+'PFJets'+PUMethod+'Pruned', 'SubJets'),
+					labelName = jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets',
+					jetSource = cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix+'Pruned', 'SubJets'),
 					algo = jetalgo,  # needed for subjet b tagging
 					rParam = jetSize,  # needed for subjet b tagging
 					jetCorrections = subJEC if subJEC is not None else None, 
@@ -576,87 +567,86 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					explicitJTA = True,  # needed for subjet b tagging
 					svClustering = True, # needed for subjet b tagging
 					fatJets=cms.InputTag(jetalgo+'PFJets'+PUMethod),             # needed for subjet flavor clustering
-					groomedFatJets=cms.InputTag(jetalgo+'PFJets'+PUMethod+'Pruned'), # needed for subjet flavor clustering
+					groomedFatJets=cms.InputTag(jetalgo+'PFJets'+PUMethod+postFix+'Pruned'), # needed for subjet flavor clustering
 					outputModules = ['outputFile']
 					) 
 
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+'PrunedSubjets', cut = CutSubjet ) )
-			getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets').addTagInfos = cms.bool(True)
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets', cut = CutSubjet ) )
+			getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets').addTagInfos = cms.bool(True)
 
 			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
-			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedPacked', 
+			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedPacked', 
 					cms.EDProducer("BoostedJetMerger",
-						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+'Pruned'),
-						subjetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets')
+						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'Pruned'),
+						subjetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets')
 						))
-			jetSeq += getattr(proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedPacked' )
-			elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedPacked_*_*' ]
-			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedPacked' )
-			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedSubjets' )
+			jetSeq += getattr(proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedPacked' )
+			elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedPacked_SubJets_*' ]
+			toolsUsed.append( 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedPacked:SubJets' )
 
                         ## Pack fat jets with subjets
-			setattr( proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+'Pruned', 
+			setattr( proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+postFix+'Pruned', 
 				 cms.EDProducer("JetSubstructurePacker",
-						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod),
+						jetSrc=cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+postFix),
 						distMax = cms.double( jetSize ),
 						fixDaughters = cms.bool(False),
 						algoTags = cms.VInputTag(
-						cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+'PrunedPacked')
+						cms.InputTag('selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedPacked')
 						), 
 						algoLabels =cms.vstring('Pruned')
 						)
 				 )
-			jetSeq += getattr(proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+'Pruned')
-			elemToKeep += [ 'keep *_packedPatJets'+jetALGO+'PF'+PUMethod+'Pruned_*_*' ]
-			toolsUsed.append( 'packedPatJets'+jetALGO+'PF'+PUMethod+'Pruned' )
+			jetSeq += getattr(proc, 'packedPatJets'+jetALGO+'PF'+PUMethod+postFix+'Pruned')
+			elemToKeep += [ 'keep *_packedPatJets'+jetALGO+'PF'+PUMethod+postFix+'Pruned_*_*' ]
+			print '|---- jetToolBox: Creating packedPatJets'+jetALGO+'PF'+PUMethod+postFix+'Pruned collection with Pruned subjets.'
 
 
 	if addTrimming:
 
-		setattr( proc, jetalgo+'PFJets'+PUMethod+'Trimmed', 
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'Trimmed', 
 				ak8PFJetsCHSTrimmed.clone( 
 					rParam = jetSize, 
 					src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents:constituents' if not updateCollection else updateCollection ) ),
 					jetAlgorithm = algorithm,
 					rFilt= rFiltTrim,
 					trimPtFracMin= ptFrac) ) 
-		setattr( proc, jetalgo+'PFJets'+PUMethod+'TrimmedMass', 
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'TrimmedMass', 
 				ak8PFJetsCHSTrimmedMass.clone( 
 					src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ), 
-					matched = cms.InputTag( jetalgo+'PFJets'+PUMethod+'Trimmed'), 
+					matched = cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix+'Trimmed'), 
 					distMax = cms.double( jetSize ) ) )
 
-		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+'TrimmedMass_*_*'] 
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'Trimmed' )
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'TrimmedMass' )
-		getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+'TrimmedMass']
-		toolsUsed.append( jetalgo+'PFJets'+PUMethod+'TrimmedMass' )
+		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+postFix+'TrimmedMass_*_*'] 
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'Trimmed' )
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'TrimmedMass' )
+		getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+postFix+'TrimmedMass']
+		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'TrimmedMass' )
 
 	if addFiltering:
 
-		setattr( proc, jetalgo+'PFJets'+PUMethod+'Filtered', 
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'Filtered', 
 				ak8PFJetsCHSFiltered.clone( 
 					src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents:constituents' if not updateCollection else updateCollection ) ),
 					rParam = jetSize, 
 					jetAlgorithm = algorithm,
 					rFilt= rfilt,
 					nFilt= nfilt ) ) 
-		setattr( proc, jetalgo+'PFJets'+PUMethod+'FilteredMass', 
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'FilteredMass', 
 				ak8PFJetsCHSFilteredMass.clone( 
 					src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ), 
-					matched = cms.InputTag( jetalgo+'PFJets'+PUMethod+'Filtered'), 
+					matched = cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix+'Filtered'), 
 					distMax = cms.double( jetSize ) ) )
-		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+'FilteredMass_*_*'] 
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'Filtered' )
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'FilteredMass' )
-		getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+'FilteredMass']
-		toolsUsed.append( jetalgo+'PFJets'+PUMethod+'FilteredMass' )
+		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+postFix+'FilteredMass_*_*'] 
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'Filtered' )
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'FilteredMass' )
+		getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+postFix+'FilteredMass']
+		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'FilteredMass' )
 
 	if addCMSTopTagger :
 
 		if 'CA' in jetALGO : 
 
-			setattr( proc, 'cmsTopTagPFJets'+PUMethod,  
+			setattr( proc, 'cmsTopTagPFJets'+PUMethod+postFix,  
 					cms.EDProducer("CATopJetProducer",
 						PFJetParameters.clone( 
 							src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents:constituents' if not updateCollection else updateCollection ) ),
@@ -685,7 +675,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			
 			setattr( proc, "CATopTagInfos", 
 					cms.EDProducer("CATopJetTagger",
-						src = cms.InputTag('cmsTopTagPFJets'+PUMethod),
+						src = cms.InputTag('cmsTopTagPFJets'+PUMethod+postFix),
 						TopMass = cms.double(171),
 						TopMassMin = cms.double(0.),
 						TopMassMax = cms.double(250.),
@@ -699,7 +689,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					)
 			addJetCollection(
 					proc,
-					labelName = 'CMSTopTag'+PUMethod,
+					labelName = 'CMSTopTag'+PUMethod+postFix,
 					jetSource = cms.InputTag('cmsTopTagPFJets'+PUMethod),
 					jetCorrections = JEC if JEC is not None else None, 
 					pfCandidates = cms.InputTag( pfCand ),  
@@ -713,14 +703,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					getJetMCFlavour = False, # jet flavor should always be disabled for groomed jets
 					genParticles = cms.InputTag(genParticlesLabel)
 					)
-			getattr(proc,'patJetsCMSTopTag'+PUMethod).addTagInfos = True
-			getattr(proc,'patJetsCMSTopTag'+PUMethod).tagInfoSources = cms.VInputTag( cms.InputTag('CATopTagInfos'))
-			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod, selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod, cut = Cut ) )
+			getattr(proc,'patJetsCMSTopTag'+PUMethod+postFix).addTagInfos = True
+			getattr(proc,'patJetsCMSTopTag'+PUMethod+postFix).tagInfoSources = cms.VInputTag( cms.InputTag('CATopTagInfos'))
+			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+postFix, selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod+postFix, cut = Cut ) )
 
 			addJetCollection(
 					proc,
-					labelName = 'CMSTopTag'+PUMethod+'Subjets',
-					jetSource = cms.InputTag('cmsTopTagPFJets'+PUMethod, 'SubJets'),
+					labelName = 'CMSTopTag'+PUMethod+postFix+'Subjets',
+					jetSource = cms.InputTag('cmsTopTagPFJets'+PUMethod+postFix, 'SubJets'),
 					algo = jetalgo,  # needed for subjet b tagging
 					rParam = jetSize,  # needed for subjet b tagging
 					jetCorrections = subJEC if subJEC is not None else None, 
@@ -736,52 +726,52 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					explicitJTA = True,  # needed for subjet b tagging
 					svClustering = True, # needed for subjet b tagging
 					fatJets=cms.InputTag(jetalgo+'PFJets'+PUMethod),             # needed for subjet flavor clustering
-					groomedFatJets=cms.InputTag('patJetsCMSTopTag'+PUMethod), # needed for subjet flavor clustering
+					groomedFatJets=cms.InputTag('patJetsCMSTopTag'+PUMethod+postFix), # needed for subjet flavor clustering
 					genParticles = cms.InputTag(genParticlesLabel)
 					)
 
-			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+'Subjets', selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod+'Subjets', cut = Cut ) )
-			getattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+'Subjets' ).addTagInfos = cms.bool(True)
+			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+postFix+'Subjets', selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod+postFix+'Subjets', cut = Cut ) )
+			getattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+postFix+'Subjets' ).addTagInfos = cms.bool(True)
 
-			setattr( proc, 'patJetsCMSTopTag'+PUMethod+'Packed', 
+			setattr( proc, 'patJetsCMSTopTag'+PUMethod+postFix+'Packed', 
 					cms.EDProducer("BoostedJetMerger",
-						jetSrc=cms.InputTag('patJetsCMSTopTag'+PUMethod ),
-						subjetSrc=cms.InputTag('patJetsCMSTopTag'+PUMethod+'Subjets')
+						jetSrc=cms.InputTag('patJetsCMSTopTag'+PUMethod+postFix ),
+						subjetSrc=cms.InputTag('patJetsCMSTopTag'+PUMethod+postFix+'Subjets')
 						))
-			jetSeq += getattr(proc, 'patJetsCMSTopTag'+PUMethod+'Packed' )
-			elemToKeep += [ 'keep *_patJetsCMSTopTag'+PUMethod+'Packed_*_*' ]
-			toolsUsed.append( 'patJetsCMSTopTag'+PUMethod+'Packed' )
+			jetSeq += getattr(proc, 'patJetsCMSTopTag'+PUMethod+postFix+'Packed' )
+			elemToKeep += [ 'keep *_patJetsCMSTopTag'+PUMethod+postFix+'Packed_*_*' ]
+			toolsUsed.append( 'patJetsCMSTopTag'+PUMethod+postFix+'Packed' )
 
 		else: print '|---- jetToolBox: CMS recommends CambridgeAachen for CMS Top Tagger, you are using '+algorithm+'. JetToolbox will not run CMS Top Tagger.'
 
 	if addMassDrop :
 
 		if 'CA' in jetALGO : 
-			setattr( proc, jetalgo+'PFJets'+PUMethod+'MassDropFiltered', 
+			setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'MassDropFiltered', 
 					ca15PFJetsCHSMassDropFiltered.clone( 
 						rParam = jetSize,
 						src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents:constituents' if not updateCollection else updateCollection ) ),
 						) )
-			setattr( proc, jetalgo+'PFJets'+PUMethod+'MassDropFilteredMass', ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag( jetalgo+'PFJets'+PUMethod), 
-				matched = cms.InputTag(jetalgo+'PFJets'+PUMethod+'MassDropFiltered'), distMax = cms.double( jetSize ) ) )
-			elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+'MassDropFilteredMass_*_*' ]
-			getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+'MassDropFilteredMass' ]
-			jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'MassDropFiltered' )
-			jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'MassDropFilteredMass' )
+			setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'MassDropFilteredMass', ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix), 
+				matched = cms.InputTag(jetalgo+'PFJets'+PUMethod+postFix+'MassDropFiltered'), distMax = cms.double( jetSize ) ) )
+			elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+postFix+'MassDropFilteredMass_*_*' ]
+			getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+postFix+'MassDropFilteredMass' ]
+			jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'MassDropFiltered' )
+			jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'MassDropFilteredMass' )
 		else: print '|---- jetToolBox: CMS recommends CambridgeAachen for Mass Drop, you are using '+algorithm+'. JetToolbox will not run Mass Drop.'
-		toolsUsed.append( jetalgo+'PFJets'+PUMethod+'MassDropFilteredMass' )
+		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'MassDropFilteredMass' )
 
 	if addHEPTopTagger: 
 		if ( jetSize >= 1. ) and ( 'CA' in jetALGO ): 
 
-			setattr( proc, 'hepTopTagPFJets'+PUMethod, hepTopTagPFJetsCHS.clone( src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents:constituents' if not updateCollection else updateCollection ) ) ) )
-			setattr( proc, 'hepTopTagPFJets'+PUMethod+'Mass'+jetALGO, ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag( jetalgo+'PFJets'+PUMethod), 
-				matched = cms.InputTag("hepTopTagPFJets"+PUMethod), distMax = cms.double( jetSize ) ) )
-			elemToKeep += [ 'keep *_hepTopTagPFJets'+PUMethod+'Mass'+jetALGO+'_*_*' ]
-			getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += [ 'hepTopTagPFJets'+PUMethod+'Mass'+jetALGO ]
-			jetSeq += getattr(proc, 'hepTopTagPFJets'+PUMethod )
-			jetSeq += getattr(proc, 'hepTopTagPFJets'+PUMethod+'Mass'+jetALGO )
-			toolsUsed.append( 'hepTopTagPFJets'+PUMethod+'Mass'+jetALGO )
+			setattr( proc, 'hepTopTagPFJets'+PUMethod+postFix, hepTopTagPFJetsCHS.clone( src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+'Constituents:constituents' if not updateCollection else updateCollection ) ) ) )
+			setattr( proc, 'hepTopTagPFJets'+PUMethod+postFix+'Mass'+jetALGO, ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag( jetalgo+'PFJets'+PUMethod), 
+				matched = cms.InputTag("hepTopTagPFJets"+PUMethod+postFix), distMax = cms.double( jetSize ) ) )
+			elemToKeep += [ 'keep *_hepTopTagPFJets'+PUMethod+postFix+'Mass'+jetALGO+'_*_*' ]
+			getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ 'hepTopTagPFJets'+PUMethod+postFix+'Mass'+jetALGO ]
+			jetSeq += getattr(proc, 'hepTopTagPFJets'+PUMethod+postFix )
+			jetSeq += getattr(proc, 'hepTopTagPFJets'+PUMethod+postFix+'Mass'+jetALGO )
+			toolsUsed.append( 'hepTopTagPFJets'+PUMethod+postFix+'Mass'+jetALGO )
 		else: print '|---- jetToolBox: CMS recommends CambridgeAachen for HEPTopTagger, you are using '+algorithm+', and a jet cone size bigger than 1. JetToolbox will not run HEP TopTagger.'
 
 	####### Nsubjettiness
@@ -789,7 +779,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		from RecoJets.JetProducers.nJettinessAdder_cfi import Njettiness
 
 		rangeTau = range(1,maxTau+1)
-		setattr( proc, 'Njettiness'+jetALGO+PUMethod, 
+		setattr( proc, 'Njettiness'+jetALGO+PUMethod+postFix, 
 				Njettiness.clone( src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ),
 					Njets=cms.vuint32(rangeTau),         # compute 1-, 2-, 3-, 4- subjettiness
 					# variables for measure definition : 
@@ -802,10 +792,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					nPass = cms.int32(999),             # not used by default
 					akAxesR0 = cms.double(-999.0) ) )        # not used by default
 
-		elemToKeep += [ 'keep *_Njettiness'+jetALGO+PUMethod+'_*_*' ]
-		for tau in rangeTau: getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['Njettiness'+jetALGO+PUMethod+':tau'+str(tau) ] 
-		jetSeq += getattr(proc, 'Njettiness'+jetALGO+PUMethod )
-		toolsUsed.append( 'Njettiness'+jetALGO+PUMethod )
+		elemToKeep += [ 'keep *_Njettiness'+jetALGO+PUMethod+postFix+'_*_*' ]
+		for tau in rangeTau: getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += ['Njettiness'+jetALGO+PUMethod+postFix+':tau'+str(tau) ] 
+		jetSeq += getattr(proc, 'Njettiness'+jetALGO+PUMethod+postFix )
+		toolsUsed.append( 'Njettiness'+jetALGO+PUMethod+postFix )
 
 	####### Nsubjettiness
 	if addNsubSubjets:
@@ -823,10 +813,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                         print '|---- jetToolBox: Nsubjetiness of subjets needs a Subjet collection. Or create one using addSoftDropSubjets option, or updateCollection.'
 
 			return None
-		typeSubjetColl = jetALGO+'PF'+PUMethod+groomer+'Subjets'
+		typeSubjetColl = jetALGO+'PF'+PUMethod+postFix+groomer+'Subjets'
 		rangeTau = range(1,subjetMaxTau+1)
 		setattr( proc, 'Nsubjettiness'+typeSubjetColl, 
-				Njettiness.clone( src = cms.InputTag( (jetalgo+'PFJets'+PUMethod+groomer if not updateCollectionSubjets else updateCollectionSubjets ), 'SubJets' ), 
+				Njettiness.clone( src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod+postFix+groomer if not updateCollectionSubjets else updateCollectionSubjets ), 'SubJets' ), 
 					Njets=cms.vuint32(rangeTau),         # compute 1-, 2-, 3-, 4- subjettiness
 					# variables for measure definition : 
 					measureDefinition = cms.uint32( 0 ), # CMS default is normalized measure
@@ -868,17 +858,17 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if ( 'ak4' in jetalgo ) and ( PUMethod not in ['Puppi','CS','SK'] ) :
 			from RecoJets.JetProducers.QGTagger_cfi import QGTagger
 			proc.load('RecoJets.JetProducers.QGTagger_cfi') 	## In 74X you need to run some stuff before.
-			setattr( proc, 'QGTagger'+jetALGO+'PF'+PUMethod, 
+			setattr( proc, 'QGTagger'+jetALGO+'PF'+PUMethod+postFix, 
 					QGTagger.clone(
 						srcJets = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ),    # Could be reco::PFJetCollection or pat::JetCollection (both AOD and miniAOD)
 						jetsLabel = cms.string('QGL_AK4PF'+QGjetsLabel)        # Other options (might need to add an ESSource for it): see https://twiki.cern.ch/twiki/bin/viewauth/CMS/QGDataBaseVersion
 						)
 					)
-			elemToKeep += [ 'keep *_QGTagger'+jetALGO+'PF'+PUMethod+'_*_*' ]
-			getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['QGTagger'+jetALGO+'PF'+PUMethod+':qgLikelihood']  
-			jetSeq += getattr(proc, 'QGTagger'+jetALGO+'PF'+PUMethod )
+			elemToKeep += [ 'keep *_QGTagger'+jetALGO+'PF'+PUMethod+postFix+'_*_*' ]
+			getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += ['QGTagger'+jetALGO+'PF'+PUMethod+postFix+':qgLikelihood']  
+			jetSeq += getattr(proc, 'QGTagger'+jetALGO+'PF'+PUMethod+postFix )
 
-                        toolsUsed.append( 'QGTagger'+jetALGO+'PF'+PUMethod )
+                        toolsUsed.append( 'QGTagger'+jetALGO+'PF'+PUMethod+postFix )
 		else:
 			print '|---- jetToolBox: QGTagger is optimized for ak4 jets with CHS. NOT running QGTagger'
 
@@ -889,7 +879,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		        if PUMethod=="Puppi": print '|---- jetToolBox: PUJetID is not yet optimized for ak4 PFjets with PUPPI. USE ONLY FOR TESTING.'
                         from RecoJets.JetProducers.pileupjetidproducer_cfi import pileupJetIdCalculator,pileupJetIdEvaluator
 
-			setattr( proc, jetALGO+'PF'+PUMethod+'pileupJetIdCalculator',
+			setattr( proc, jetALGO+'PF'+PUMethod+postFix+'pileupJetIdCalculator',
 					pileupJetIdCalculator.clone(
 						jets = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ),
 						rho = cms.InputTag("fixedGridRhoFastjetAll"),
@@ -898,19 +888,19 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 						inputIsCorrected = cms.bool(False)
 						))
 
-			setattr( proc, jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator',
+			setattr( proc, jetALGO+'PF'+PUMethod+postFix+'pileupJetIdEvaluator',
 					pileupJetIdEvaluator.clone(
-						jetids = cms.InputTag(jetALGO+'PF'+PUMethod+'pileupJetIdCalculator'),
+						jetids = cms.InputTag(jetALGO+'PF'+PUMethod+postFix+'pileupJetIdCalculator'),
 						jets = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ),
 						rho = cms.InputTag("fixedGridRhoFastjetAll"),
 						vertexes = cms.InputTag(pvLabel)
 						)
 					)
 
-                        getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += [jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator:fullDiscriminant']
-                        getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userInts.src += [jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator:cutbasedId',jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator:fullId']
-                        elemToKeep += ['keep *_'+jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator_*_*']
-                        toolsUsed.append( jetALGO+'PF'+PUMethod+'pileupJetIdEvaluator' )
+                        getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [jetALGO+'PF'+PUMethod+postFix+'pileupJetIdEvaluator:fullDiscriminant']
+                        getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userInts.src += [jetALGO+'PF'+PUMethod+postFix+'pileupJetIdEvaluator:cutbasedId',jetALGO+'PF'+PUMethod+postFix+'pileupJetIdEvaluator:fullId']
+                        elemToKeep += ['keep *_'+jetALGO+'PF'+PUMethod+postFix+'pileupJetIdEvaluator_*_*']
+                        toolsUsed.append( jetALGO+'PF'+PUMethod+postFix+'pileupJetIdEvaluator' )
 		else:
                         print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS. NOT running PUJetID.'
 
@@ -918,33 +908,33 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if addEnergyCorrFunc:
 		from RecoJets.JetProducers.ECF_cfi import ECF 
 		rangeECF = range(1,maxECF+1)
-		setattr( proc, jetalgo+'PFJets'+PUMethod+'ECF', ECF.clone(
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'ECF', ECF.clone(
 				src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ),
 				Njets = cms.vuint32( rangeECF ),
 				beta = cms.double( ecfBeta ) 
 				))
 
-		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+'ECF_*_*'] 
-		for ecf in rangeECF: getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+'ECF:ecf'+str(ecf) ]
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+'ECF' )
-		toolsUsed.append( jetalgo+'PFJets'+PUMethod+'ECF' )
+		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+postFix+'ECF_*_*'] 
+		for ecf in rangeECF: getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+postFix+'ECF:ecf'+str(ecf) ]
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'ECF' )
+		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'ECF' )
 	
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
 
-	setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod, selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod, cut = Cut ) )
-	elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_*_*' ]
-	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_calo*_*' ]
-	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+'_tagInfos_*' ]
+	setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix, selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+postFix, cut = Cut ) )
+	elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'_*_*' ]
+	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'_calo*_*' ]
+	elemToKeep += [ 'drop *_selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'_tagInfos_*' ]
 
 	if updateCollectionSubjets: 
-		setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed', cut = Cut ) )
-		elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed__*' ]
+		setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+updateSubjetLabel+'Packed', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+postFix+updateSubjetLabel+'Packed', cut = Cut ) )
+		elemToKeep += [ 'keep *_selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+updateSubjetLabel+'Packed__*' ]
 
 
 	if len(toolsUsed) > 0 : print '|---- jetToolBox: Running '+', '.join(toolsUsed)+'.'
-	print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+' collection.'
-	if updateCollectionSubjets: print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+updateSubjetLabel+'Packed collection.'
+	print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+' collection.'
+	if updateCollectionSubjets: print '|---- jetToolBox: Creating selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+updateSubjetLabel+'Packed collection.'
 
 	### "return"
 	setattr(proc, jetSequence, jetSeq)
