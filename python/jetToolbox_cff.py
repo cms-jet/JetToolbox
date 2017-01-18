@@ -32,6 +32,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		postFix='',
 		bTagDiscriminators = None, 
 		bTagInfos = None, 
+		subjetBTagDiscriminators = None, 
+		subjetBTagInfos = None, 
 		subJETCorrPayload='', subJETCorrLevels = [ 'None' ], GetSubjetMCFlavour=True,
 		CutSubjet = '', 
 		addPruning=False, zCut=0.1, rCut=0.5, addPrunedSubjets=False,
@@ -108,22 +110,30 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		else: subJETCorrLevels = [ 'L2Relative', 'L3Absolute']
 		if runOnData: subJETCorrLevels.append('L2L3Residual')
 
+	## b-tag discriminators
+	defaultbTagDiscriminators = [
+			'pfTrackCountingHighEffBJetTags',
+			'pfTrackCountingHighPurBJetTags',
+			'pfJetProbabilityBJetTags',
+			'pfJetBProbabilityBJetTags',
+			'pfSimpleSecondaryVertexHighEffBJetTags',
+			'pfSimpleSecondaryVertexHighPurBJetTags',
+			'pfCombinedSecondaryVertexV2BJetTags',
+			'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+			'pfCombinedMVAV2BJetTags'
+	]
+	if bTagDiscriminators is None: bTagDiscriminators = defaultbTagDiscriminators
+	if any("deepFlavour" in disc for disc in bTagDiscriminators): deepBtagFlag = True
+	else: deepBtagFlag = False
+	print '|---- jetToolBox: Adding the following btag discriminators in the jetCollection:', bTagDiscriminators  
+
+	if addPrunedSubjets or addSoftDropSubjets:
+		if subjetBTagDiscriminators is None: subjetBTagDiscriminators = defaultbTagDiscriminators
+		print '|---- jetToolBox: Adding the following btag discriminators in the subjet Collection:', subjetBTagDiscriminators  
+
+
 
 	if not updateCollection: 
-
-		## b-tag discriminators
-		if bTagDiscriminators is None:
-			bTagDiscriminators = [
-					'pfTrackCountingHighEffBJetTags',
-					'pfTrackCountingHighPurBJetTags',
-					'pfJetProbabilityBJetTags',
-					'pfJetBProbabilityBJetTags',
-					'pfSimpleSecondaryVertexHighEffBJetTags',
-					'pfSimpleSecondaryVertexHighPurBJetTags',
-					'pfCombinedSecondaryVertexV2BJetTags',
-					'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-					'pfCombinedMVAV2BJetTags'
-			]
 
 		#### For MiniAOD
 		if miniAOD:
@@ -318,7 +328,29 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				genParticles = cms.InputTag(genParticlesLabel),
 				outputModules = ['outputFile']
 				) 
-		getattr(proc,'patJets'+jetALGO+'PF'+PUMethod+postFix).addTagInfos = cms.bool(True)
+		'''
+				proc,
+				cms.InputTag( jetalgo+'PFJets'+PUMethod),
+				jetALGO,
+				'PF'+PUMethod,
+				doJTA        = True,
+				doBTagging   = True,
+				jetCorrLabel = JEC if JEC is not None else None, 
+				doType1MET   = True,
+				doL1Cleaning = True,                 
+				doL1Counters = False,
+				genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNu'),
+				doJetID      = True,
+				#jetIdLabel   = jetalgo,
+				btagInfo = bTagInfos,
+				btagdiscriminators = bTagDiscriminators,
+				outputModules = ['outputFile']
+				)
+
+		'''
+		getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod+postFix).addTagInfos = cms.bool(True)
+		if deepBtagFlag: getattr( proc, 'jetTracksAssociatorAtVertex'+jetALGO+'PF'+PUMethod+postFix ).tracks = tvLabel  
+
 
 		if 'CS' in PUMethod: getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod+postFix ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
 		patJets = 'patJets'
@@ -450,8 +482,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					svSource = cms.InputTag( svLabel ),  
 					muSource = cms.InputTag( muLabel ),
 					elSource = cms.InputTag( elLabel ),
-					btagDiscriminators = bTagDiscriminators,
-					btagInfos = bTagInfos,
+					btagDiscriminators = subjetBTagDiscriminators,
+					btagInfos = subjetBTagInfos,
 					genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNuSoftDrop','SubJets'),
 					getJetMCFlavour = GetSubjetMCFlavour,
 					genParticles = cms.InputTag(genParticlesLabel),
@@ -464,6 +496,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets', cut = CutSubjet ))
 			getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets').addTagInfos = cms.bool(True)
+			#if deepBtagFlag: getattr( proc, 'jetTracksAssociatorAtVertex'+jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets' ).tracks = tvLabel  
 
 			# Establish references between PATified fat jets and subjets using the BoostedJetMerger
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'SoftDropPacked', 
@@ -561,8 +594,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					elSource = cms.InputTag( elLabel ),
 					getJetMCFlavour = GetSubjetMCFlavour,
 					genParticles = cms.InputTag(genParticlesLabel),
-					btagDiscriminators = bTagDiscriminators,
-					btagInfos = bTagInfos,
+					btagDiscriminators = subjetBTagDiscriminators,
+					btagInfos = subjetBTagInfos,
 					genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNuPruned','SubJets'),
 					explicitJTA = True,  # needed for subjet b tagging
 					svClustering = True, # needed for subjet b tagging
@@ -573,6 +606,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets', cut = CutSubjet ) )
 			getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets').addTagInfos = cms.bool(True)
+			#if deepBtagFlag: getattr( proc, 'jetTracksAssociatorAtVertex'+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets' ).tracks = tvLabel  
 
 			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedPacked', 
@@ -704,6 +738,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					genParticles = cms.InputTag(genParticlesLabel)
 					)
 			getattr(proc,'patJetsCMSTopTag'+PUMethod+postFix).addTagInfos = True
+			if deepBtagFlag: getattr( proc, 'jetTracksAssociatorAtVertex'+PUMethod+postFix ).tracks = tvLabel  
 			getattr(proc,'patJetsCMSTopTag'+PUMethod+postFix).tagInfoSources = cms.VInputTag( cms.InputTag('CATopTagInfos'))
 			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+postFix, selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod+postFix, cut = Cut ) )
 
@@ -719,8 +754,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					svSource = cms.InputTag( svLabel ), 
 					muSource = cms.InputTag( muLabel ),
 					elSource = cms.InputTag( elLabel ),
-					btagDiscriminators = bTagDiscriminators,
-					btagInfos = bTagInfos,
+					btagDiscriminators = subjetBTagDiscriminators,
+					btagInfos = subjetBTagInfos,
 					genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNu'),
 					getJetMCFlavour = GetSubjetMCFlavour,
 					explicitJTA = True,  # needed for subjet b tagging
@@ -732,6 +767,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+postFix+'Subjets', selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod+postFix+'Subjets', cut = Cut ) )
 			getattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+postFix+'Subjets' ).addTagInfos = cms.bool(True)
+			#if deepBtagFlag: getattr( proc, 'jetTracksAssociatorAtVertex'+PUMethod+postFix+'Subjets' ).tracks = tvLabel  
 
 			setattr( proc, 'patJetsCMSTopTag'+PUMethod+postFix+'Packed', 
 					cms.EDProducer("BoostedJetMerger",
