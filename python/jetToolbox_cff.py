@@ -200,6 +200,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				if miniAOD:
 					puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
 					puppi.clonePackedCands = cms.bool(True)
+					if PUMethod == 'Puppi':
+						puppi.useExistingWeights = cms.bool(True)
+						print '|---- jetToolBox: Puppi default value. It takes the existing weights from miniAOD.'
+					else:
+						PUMethod = 'Puppi'
+						print '|---- jetToolBox: It will calculate the weights from scratch. (It is NOT taking the existing weights from miniAOD.)'
 				jetSeq += getattr(proc, 'puppi' )
 				srcForPFJets = 'puppi'
 
