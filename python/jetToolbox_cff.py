@@ -30,7 +30,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		JETCorrPayload='', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
 		Cut = '', 
 		postFix='',
-		bTagDiscriminators = None, 
+		bTagDiscriminators = '', 
 		bTagInfos = None, 
 		subjetBTagDiscriminators = None, 
 		subjetBTagInfos = None, 
@@ -87,7 +87,11 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	jetALGO = jetAlgo.upper()+size
 	jetalgo = jetAlgo.lower()+size
 	if jetalgo not in recommendedJetAlgos: print '|---- jetToolBox: CMS recommends the following jet algoritms: '+' '.join(recommendedJetAlgos)+'. You are using', jetalgo,'.'
-
+	### trick for jet pt cut
+	for c in Cut.split('&&'):
+		if 'pt' in c: 
+			ptCut = c.split('>')[1]
+	print ptCut
 
 	#################################################################################
 	####### Toolbox start 
@@ -122,7 +126,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			'pfCombinedInclusiveSecondaryVertexV2BJetTags',
 			'pfCombinedMVAV2BJetTags'
 	]
-	if bTagDiscriminators is None: bTagDiscriminators = defaultbTagDiscriminators
+	if bTagDiscriminators is '': bTagDiscriminators = defaultbTagDiscriminators
 	if any("deepFlavour" in disc for disc in bTagDiscriminators): deepBtagFlag = True
 	else: deepBtagFlag = False
 	print '|---- jetToolBox: Adding the following btag discriminators in the jetCollection:', bTagDiscriminators  
@@ -194,8 +198,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				proc.load('CommonTools.PileupAlgos.Puppi_cff')
 				puppi.candName = cms.InputTag( pfCand ) 
 				if miniAOD:
-				  puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
-				  puppi.clonePackedCands = cms.bool(True)
+					puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
+					puppi.clonePackedCands = cms.bool(True)
 				jetSeq += getattr(proc, 'puppi' )
 				srcForPFJets = 'puppi'
 
@@ -204,6 +208,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					ak4PFJetsPuppi.clone( src = cms.InputTag( srcForPFJets ),
 						doAreaFastjet = True, 
 						rParam = jetSize, 
+						jetPtMin = cms.double( ptCut ),
 						jetAlgorithm = algorithm ) )  
 			jetSeq += getattr(proc, jetalgo+'PFJetsPuppi' )
 
@@ -225,6 +230,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			setattr( proc, jetalgo+'PFJetsSK', 
 					ak4PFJetsSK.clone(  src = cms.InputTag( srcForPFJets ),
 						rParam = jetSize, 
+						jetPtMin = cms.double( ptCut ),
 						jetAlgorithm = algorithm ) ) 
 			jetSeq += getattr(proc, jetalgo+'PFJetsSK' )
 
@@ -236,7 +242,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			from RecoJets.JetProducers.ak4PFJetsCHSCS_cfi import ak4PFJetsCHSCS
 			setattr( proc, jetalgo+'PFJetsCS', 
 					ak4PFJetsCHSCS.clone( doAreaFastjet = True, 
-						src = cms.InputTag( pfCand ), #srcForPFJets ),
+						src = cms.InputTag( pfCand ), 
+						jetPtMin = cms.double( ptCut ),
 						csRParam = cms.double(jetSize),
 						jetAlgorithm = algorithm ) ) 
 			if miniAOD: getattr( proc, jetalgo+'PFJetsCS').src = pfCand
@@ -275,6 +282,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					ak4PFJetsCHS.clone( src = cms.InputTag( srcForPFJets ), 
 						doAreaFastjet = True, 
 						rParam = jetSize, 
+						jetPtMin = cms.double( ptCut ),
 						jetAlgorithm = algorithm ) ) 
 			jetSeq += getattr(proc, jetalgo+'PFJetsCHS' )
 
