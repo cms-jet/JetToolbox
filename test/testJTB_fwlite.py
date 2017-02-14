@@ -29,7 +29,8 @@ events = Events ('jettoolbox.root')
 PUMethod = 'CHS'
 
 handle = Handle("std::vector<pat::Jet>")
-label = ("selectedPatJetsAK8PF"+PUMethod) 
+#label = ("selectedPatJetsAK8PF"+PUMethod) 
+label = ('selectedPatJetsAK8PFCHSCollectionTests') 
 #label = ('packedPatJetsAK8PFCHSSoftDrop') 
 #label = ('packedPatJetsAK8PFCHSPruned') 
 
@@ -48,7 +49,8 @@ for event in events:
 	#subjets = handleSubjets.product()
 
 	for i,j in enumerate(jets):
-		print "jetAK8 %3d: pt %5.1f (raw pt %5.1f), eta %+4.2f, mass %5.1f ungroomed, %5.1f softdrop, %5.1f pruned, %5.1f trimmed, %5.1f filtered. " % ( i, j.pt(), j.pt()*j.jecFactor('Uncorrected'), j.eta(), j.mass(), j.userFloat('ak8PFJetsCHSSoftDropMass'), j.userFloat('ak8PFJetsCHSPrunedMass'), j.userFloat('ak8PFJetsCHSTrimmedMass'), j.userFloat('ak8PFJetsCHSFilteredMass'))
+		#print "jetAK8 %3d: pt %5.1f (raw pt %5.1f), eta %+4.2f, mass %5.1f ungroomed, %5.1f softdrop, %5.1f pruned, %5.1f trimmed, %5.1f filtered. " % ( i, j.pt(), j.pt()*j.jecFactor('Uncorrected'), j.eta(), j.mass(), j.userFloat('ak8PFJetsCHSSoftDropMass'), j.userFloat('ak8PFJetsCHSPrunedMass'), j.userFloat('ak8PFJetsCHSTrimmedMass'), j.userFloat('ak8PFJetsCHSFilteredMass'))
+		print j.pt(), j.eta(), j.userFloat('ak8PFJetsCHSCollectionTestsPrunedMass'), j.bDiscriminator('pfCombinedInclusiveSecondaryVertexV2BJetTags'), j.bDiscriminator('deepFlavourJetTags:probb')
 			          
 		'''
 	i = 0
@@ -73,13 +75,13 @@ for event in events:
 				hJet1PrunedMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"PrunedMass") )
 				hJet1SoftDropMass.Fill( jet.userFloat("ak8PFJets"+PUMethod+"SoftDropMass") )
 
-		'''
 			
 		wSubjets = j.subjets('SoftDrop')
 		#wSubjets = j.subjets('Pruned')
 		for iw,wsub in enumerate( wSubjets ) :
 			print "   w subjet %3d: pt %5.1f (raw pt %5.1f), eta %+4.2f, mass %5.1f " % (
 			iw, wsub.pt(), wsub.pt()*wsub.jecFactor('Uncorrected'), wsub.eta(), wsub.mass() )
+		'''
 
 
 #CLEANUP

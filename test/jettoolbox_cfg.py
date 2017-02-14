@@ -43,6 +43,11 @@ listBtagDiscriminatorsAK4 = [
                 'pfCombinedMVAV2BJetTags',
                 'pfCombinedCvsLJetTags',
                 'pfCombinedCvsBJetTags',
+		'deepFlavourJetTags:probudsg',
+		'deepFlavourJetTags:probb',
+		'deepFlavourJetTags:probc',
+		'deepFlavourJetTags:probbb',
+		'deepFlavourJetTags:probcc'
                 ]
 jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', 
 		PUMethod='CHS',
@@ -52,33 +57,34 @@ jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
 		#updateCollectionSubjets='slimmedJetsAK8PFCHSSoftDropPacked:SubJets', 
 		subJETCorrPayload='AK4PFchs', 
 		bTagDiscriminators=listBtagDiscriminatorsAK4, 
+		Cut = 'pt>200',
 		#addNsubSubjets=True, 
 		addPrunedSubjets=True,
 		postFix= 'CollectionTests',
 		addTrimming=True, 
 		addPruning=True 
 		)  #, addPrunedSubjets=True, subJETCorrPayload='AK4PFchs' ) 
-jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', 
-		PUMethod='CHS',
-		#updateCollection='slimmedJetsAK8', 
-		JETCorrPayload='AK8PFchs', 
-		addEnergyCorrFunc=True, 
-		#updateCollectionSubjets='slimmedJetsAK8PFCHSSoftDropPacked:SubJets', 
-		subJETCorrPayload='AK4PFchs', 
-		bTagDiscriminators=listBtagDiscriminatorsAK4, 
-		addNsubSubjets=True, 
-		addPrunedSubjets=True,
-		postFix= 'NEWCOLLECTIONOFJETS',
-		addTrimming=True, 
-		addFiltering=True, 
-		addPruning=True, 
-		addSoftDrop=True 
-		)  #, addPrunedSubjets=True, subJETCorrPayload='AK4PFchs' ) 
+#jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', 
+#		PUMethod='CHS',
+#		#updateCollection='slimmedJetsAK8', 
+#		JETCorrPayload='AK8PFchs', 
+#		addEnergyCorrFunc=True, 
+#		#updateCollectionSubjets='slimmedJetsAK8PFCHSSoftDropPacked:SubJets', 
+#		subJETCorrPayload='AK4PFchs', 
+#		bTagDiscriminators=listBtagDiscriminatorsAK4, 
+#		addNsubSubjets=True, 
+#		addPrunedSubjets=True,
+#		postFix= 'NEWCOLLECTIONOFJETS',
+#		addTrimming=True, 
+#		addFiltering=True, 
+#		addPruning=True, 
+#		addSoftDrop=True 
+#		)  #, addPrunedSubjets=True, subJETCorrPayload='AK4PFchs' ) 
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', JETCorrPayload = 'AK8PFchs', addEnergyCorrFunc=True, addNsubSubjets=True, addTrimming=True, addFiltering=True, addPruning=True, addSoftDrop=True, addSoftDropSubjets=True )  #PUMethod='CHS', addPrunedSubjets=True, subJETCorrPayload='AK4PFchs' ) 
 
 
-jetToolbox( process, 'ak4', 'ak4JetSubsUpdate', 'out', updateCollection='slimmedJets', JETCorrPayload = 'AK4PFchs', JETCorrLevels=['L2Relative', 'L3Absolute'], addQGTagger=True, addPUJetID=True, bTagDiscriminators=listBtagDiscriminatorsAK4 ) 
-jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', addQGTagger=True, addPUJetID=True, postFix='New' ) 
+#jetToolbox( process, 'ak4', 'ak4JetSubsUpdate', 'out', updateCollection='slimmedJets', JETCorrPayload = 'AK4PFchs', JETCorrLevels=['L2Relative', 'L3Absolute'], addQGTagger=True, addPUJetID=True, bTagDiscriminators=listBtagDiscriminatorsAK4 ) 
+#jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', addQGTagger=True, addPUJetID=True, postFix='New' ) 
 
 
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, miniAOD=False ) 
@@ -115,7 +121,7 @@ jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', addQGTagger=True, addPUJetID=Tr
 
 process.endpath = cms.EndPath(process.out)
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.source = cms.Source("PoolSource",
 #		fileNames = cms.untracked.vstring(#'file:example.root'
 		fileNames = cms.untracked.vstring(
