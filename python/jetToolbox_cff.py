@@ -203,10 +203,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 						puppi.useExistingWeights = cms.bool(True)
 						print '|---- jetToolBox: Puppi default value. It takes the existing weights from miniAOD.'
 					else:
-						PUMethod = 'Puppi'
+						setattr( proc, 'newpuppi', puppi.clone( eseExistingWeights = cms.bool(False)))
 						print '|---- jetToolBox: It will calculate the weights from scratch. (It is NOT taking the existing weights from miniAOD.)'
-				jetSeq += getattr(proc, 'puppi' )
-				srcForPFJets = 'puppi'
+				jetSeq += getattr(proc, ( 'puppi' if PUMethod == 'Puppi' else 'newpuppi' ) )
+				srcForPFJets = ( 'puppi' if PUMethod == 'Puppi' else 'newpuppi' )
 
 			from RecoJets.JetProducers.ak4PFJetsPuppi_cfi import ak4PFJetsPuppi
 			setattr( proc, jetalgo+'PFJetsPuppi'+postFix, 
@@ -341,7 +341,26 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				genParticles = cms.InputTag(genParticlesLabel),
 				outputModules = ['outputFile']
 				) 
+		'''
+				proc,
+				cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix),
+				jetALGO,
+				'PF'+PUMethod,
+				doJTA        = True,
+				doBTagging   = True,
+				jetCorrLabel = JEC if JEC is not None else None, 
+				doType1MET   = True,
+				doL1Cleaning = True,                 
+				doL1Counters = False,
+				genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNu'),
+				doJetID      = True,
+				#jetIdLabel   = jetalgo,
+				btagInfo = bTagInfos,
+				btagdiscriminators = bTagDiscriminators,
+				outputModules = ['outputFile']
+				)
 
+		'''
 		getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod+postFix).addTagInfos = cms.bool(True)
 		if deepBtagFlag: getattr( proc, 'jetTracksAssociatorAtVertex'+jetALGO+'PF'+PUMethod+postFix ).tracks = tvLabel  
 
