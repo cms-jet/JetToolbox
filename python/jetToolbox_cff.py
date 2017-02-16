@@ -341,26 +341,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				genParticles = cms.InputTag(genParticlesLabel),
 				outputModules = ['outputFile']
 				) 
-		'''
-				proc,
-				cms.InputTag( jetalgo+'PFJets'+PUMethod+postFix),
-				jetALGO,
-				'PF'+PUMethod,
-				doJTA        = True,
-				doBTagging   = True,
-				jetCorrLabel = JEC if JEC is not None else None, 
-				doType1MET   = True,
-				doL1Cleaning = True,                 
-				doL1Counters = False,
-				genJetCollection = cms.InputTag( jetalgo+'GenJetsNoNu'),
-				doJetID      = True,
-				#jetIdLabel   = jetalgo,
-				btagInfo = bTagInfos,
-				btagdiscriminators = bTagDiscriminators,
-				outputModules = ['outputFile']
-				)
 
-		'''
 		getattr( proc, 'patJets'+jetALGO+'PF'+PUMethod+postFix).addTagInfos = cms.bool(True)
 		if deepBtagFlag: getattr( proc, 'jetTracksAssociatorAtVertex'+jetALGO+'PF'+PUMethod+postFix ).tracks = tvLabel  
 
