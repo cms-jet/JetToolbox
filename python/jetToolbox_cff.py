@@ -209,13 +209,13 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				srcForPFJets = ( 'puppi' if PUMethod == 'Puppi' else 'newpuppi' )
 
 			from RecoJets.JetProducers.ak4PFJetsPuppi_cfi import ak4PFJetsPuppi
-			setattr( proc, jetalgo+'PFJetsPuppi'+postFix, 
+			setattr( proc, jetalgo+'PFJets'+PUMethod+postFix, 
 					ak4PFJetsPuppi.clone( src = cms.InputTag( srcForPFJets ),
 						doAreaFastjet = True, 
 						rParam = jetSize, 
 						jetPtMin = cms.double( ptCut ),
 						jetAlgorithm = algorithm ) )  
-			jetSeq += getattr(proc, jetalgo+'PFJetsPuppi'+postFix )
+			jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix )
 
 			if JETCorrPayload not in payloadList: JETCorrPayload = 'AK'+size+'PFPuppi'
 			if subJETCorrPayload not in payloadList: subJETCorrPayload = 'AK4PFPuppi'
