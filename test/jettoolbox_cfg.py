@@ -37,12 +37,44 @@ from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, addNsubSubjets=True ) 
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', addPruning=True, addSoftDrop=True , addSoftDropSubjets=True,  addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, addNsubSubjets=True ) 
 
+jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
+		runOnMC = True,
+		PUMethod='Puppi',
+		addSoftDropSubjets = True,
+		addSoftDrop = True,
+		addNsub = True,
+		bTagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags'],
+		addCMSTopTagger = False)
+
+process.selectedMuons = cms.EDFilter("CandPtrSelector", src = cms.InputTag("slimmedMuons"), cut = cms.string("pt>50"))
+
+process.pfCHS = cms.EDFilter("CandPtrSelector", src = cms.InputTag("packedPFCandidates"), cut = cms.string("fromPV"))
+process.pfNoMuonCHS =  cms.EDProducer("CandPtrProjector", src = cms.InputTag("pfCHS"), veto = cms.InputTag("selectedMuons"))
+
+jetToolbox( process, 'ak8', 'ak8JetSubsNoLep', 'out',
+            runOnMC = True,
+            PUMethod='Puppi',
+            newPFCollection=True,
+            nameNewPFCollection='pfNoMuonCHS',
+            addSoftDropSubjets = True,
+            addSoftDrop = True,
+            addNsub = True,
+            bTagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags'],
+            addCMSTopTagger = False,
+            postFix="NoLep")
+
+'''
 listBtagDiscriminatorsAK4 = [ 
                 'pfJetProbabilityBJetTags',
                 'pfCombinedInclusiveSecondaryVertexV2BJetTags',
                 'pfCombinedMVAV2BJetTags',
                 'pfCombinedCvsLJetTags',
                 'pfCombinedCvsBJetTags',
+		'deepFlavourJetTags:probudsg',
+		'deepFlavourJetTags:probb',
+		'deepFlavourJetTags:probc',
+		'deepFlavourJetTags:probbb',
+		'deepFlavourJetTags:probcc'
                 ]
 jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', 
 		PUMethod='CHS',
@@ -52,33 +84,35 @@ jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
 		#updateCollectionSubjets='slimmedJetsAK8PFCHSSoftDropPacked:SubJets', 
 		subJETCorrPayload='AK4PFchs', 
 		bTagDiscriminators=listBtagDiscriminatorsAK4, 
+		Cut = 'pt>200',
 		#addNsubSubjets=True, 
 		addPrunedSubjets=True,
 		postFix= 'CollectionTests',
 		addTrimming=True, 
 		addPruning=True 
 		)  #, addPrunedSubjets=True, subJETCorrPayload='AK4PFchs' ) 
-jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', 
-		PUMethod='CHS',
-		#updateCollection='slimmedJetsAK8', 
-		JETCorrPayload='AK8PFchs', 
-		addEnergyCorrFunc=True, 
-		#updateCollectionSubjets='slimmedJetsAK8PFCHSSoftDropPacked:SubJets', 
-		subJETCorrPayload='AK4PFchs', 
-		bTagDiscriminators=listBtagDiscriminatorsAK4, 
-		addNsubSubjets=True, 
-		addPrunedSubjets=True,
-		postFix= 'NEWCOLLECTIONOFJETS',
-		addTrimming=True, 
-		addFiltering=True, 
-		addPruning=True, 
-		addSoftDrop=True 
-		)  #, addPrunedSubjets=True, subJETCorrPayload='AK4PFchs' ) 
+'''
+#jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', 
+#		PUMethod='CHS',
+#		#updateCollection='slimmedJetsAK8', 
+#		JETCorrPayload='AK8PFchs', 
+#		addEnergyCorrFunc=True, 
+#		#updateCollectionSubjets='slimmedJetsAK8PFCHSSoftDropPacked:SubJets', 
+#		subJETCorrPayload='AK4PFchs', 
+#		bTagDiscriminators=listBtagDiscriminatorsAK4, 
+#		addNsubSubjets=True, 
+#		addPrunedSubjets=True,
+#		postFix= 'NEWCOLLECTIONOFJETS',
+#		addTrimming=True, 
+#		addFiltering=True, 
+#		addPruning=True, 
+#		addSoftDrop=True 
+#		)  #, addPrunedSubjets=True, subJETCorrPayload='AK4PFchs' ) 
+
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', JETCorrPayload = 'AK8PFchs', addEnergyCorrFunc=True, addNsubSubjets=True, addTrimming=True, addFiltering=True, addPruning=True, addSoftDrop=True, addSoftDropSubjets=True )  #PUMethod='CHS', addPrunedSubjets=True, subJETCorrPayload='AK4PFchs' ) 
 
-
-jetToolbox( process, 'ak4', 'ak4JetSubsUpdate', 'out', updateCollection='slimmedJets', JETCorrPayload = 'AK4PFchs', JETCorrLevels=['L2Relative', 'L3Absolute'], addQGTagger=True, addPUJetID=True, bTagDiscriminators=listBtagDiscriminatorsAK4 ) 
-jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', addQGTagger=True, addPUJetID=True, postFix='New' ) 
+#jetToolbox( process, 'ak4', 'ak4JetSubsUpdate', 'out', updateCollection='slimmedJets', JETCorrPayload = 'AK4PFchs', JETCorrLevels=['L2Relative', 'L3Absolute'], addQGTagger=True, addPUJetID=True, bTagDiscriminators=listBtagDiscriminatorsAK4 ) 
+#jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', addQGTagger=True, addPUJetID=True, postFix='New' ) 
 
 
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'out', PUMethod='CHS', addPruning=True, addSoftDrop=True , addPrunedSubjets=True, addSoftDropSubjets=True, addNsub=True, maxTau=6, addTrimming=True, addFiltering=True, miniAOD=False ) 
@@ -115,7 +149,7 @@ jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', addQGTagger=True, addPUJetID=Tr
 
 process.endpath = cms.EndPath(process.out)
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.source = cms.Source("PoolSource",
 #		fileNames = cms.untracked.vstring(#'file:example.root'
 		fileNames = cms.untracked.vstring(
@@ -128,6 +162,7 @@ process.source = cms.Source("PoolSource",
 from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
 process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
 
+process.out.fileName = 'newjetToolbox.root'
 #from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValProdTTbarAODSIM
 #process.source.fileNames = filesRelValProdTTbarAODSIM
 
