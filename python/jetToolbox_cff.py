@@ -906,18 +906,35 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	###### Energy Correlation Functions
 	if addEnergyCorrFunc:
-		from RecoJets.JetProducers.ECF_cfi import ECF 
+		from RecoJets.JetProducers.ECF_cfi import ECF, ECFNbeta1, ECFNbeta2, ECFUbeta1, ECFUbeta2
 		rangeECF = range(1,maxECF+1)
 		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'ECF', ECF.clone(
 				src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ),
 				Njets = cms.vuint32( rangeECF ),
 				beta = cms.double( ecfBeta ) 
 				))
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'ECFN', ECFNbeta1.clone(  # Just use the ECFNbeta1 module, can adjust beta as we wish
+				src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ),
+				Njets = cms.vuint32( rangeECF ),
+				beta = cms.double( ecfBeta ) 
+				))
+		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'ECFU', ECFUbeta1.clone(
+				src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ),
+				Njets = cms.vuint32( rangeECF ),
+				beta = cms.double( ecfBeta ) 
+				))
 
-		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+postFix+'ECF_*_*'] 
-		for ecf in rangeECF: getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+postFix+'ECF:ecf'+str(ecf) ]
+		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+postFix+'ECF*_*_*'] 
+		for ecf in rangeECF: 
+			getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+postFix+'ECF:ecf'+str(ecf), 
+													   jetalgo+'PFJets'+PUMethod+postFix+'ECFN:ecf'+str(ecf),
+													   jetalgo+'PFJets'+PUMethod+postFix+'ECFU:ecf'+str(ecf), ]
 		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'ECF' )
 		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'ECF' )
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'ECFN' )
+		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'ECFN' )
+		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'ECFU' )
+		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'ECFU' )
 	
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
