@@ -115,10 +115,6 @@ jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', addQGTagger=True, addPUJetID=Tr
 
 process.endpath = cms.EndPath(process.out)
 
-process.myTask = cms.Task()
-process.myTask.add(*[getattr(process,prod) for prod in process.producers_()])
-process.myTask.add(*[getattr(process,filt) for filt in process.filters_()])
-process.endpath.associate(process.myTask)
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 process.source = cms.Source("PoolSource",
