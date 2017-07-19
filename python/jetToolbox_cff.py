@@ -944,6 +944,22 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				fileName = cms.untracked.string('jettoolbox.root'), 
 				outputCommands = cms.untracked.vstring( elemToKeep ) ) )
 
+	##### (Temporary?) fix to replace unschedule mode
+	if hasattr(proc, 'myTask'): 
+		getattr( proc, 'myTask', cms.Task() ).add(*[getattr(proc,prod) for prod in proc.producers_()])
+		getattr( proc, 'myTask', cms.Task() ).add(*[getattr(proc,filt) for filt in proc.filters_()])
+	else:
+		setattr( proc, 'myTask', cms.Task() )
+		getattr( proc, 'myTask', cms.Task() ).add(*[getattr(proc,prod) for prod in proc.producers_()])
+		getattr( proc, 'myTask', cms.Task() ).add(*[getattr(proc,filt) for filt in proc.filters_()])
+
+	if hasattr(proc, 'endpath'): 
+		getattr( proc, 'endpath').associate( getattr( proc, 'myTask', cms.Task() ) )
+	else: 
+		setattr( proc, 'endpath',
+				cms.EndPath(getattr(proc, outputFile), getattr( proc, 'myTask', cms.Task() )) )
+
+	#### removing mc matching for data
 	if runOnData:
 		from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
 		removeMCMatching(proc, names=['Jets'], outputModules=[outputFile])
