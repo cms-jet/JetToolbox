@@ -9,8 +9,8 @@
 ###############################################
 import FWCore.ParameterSet.Config as cms
 
-##from RecoJets.Configuration.RecoPFJets_cff import ak4PFJets, ak8PFJetsCHSSoftDrop, ak8PFJetsCHSSoftDropMass, ak8PFJetsCHSPruned, ak8PFJetsCHSPrunedMass, ak8PFJetsCHSTrimmed, ak8PFJetsCHSTrimmedMass, ak8PFJetsCHSFiltered, ak8PFJetsCHSFilteredMass, ak4PFJetsCHS, ca15PFJetsCHSMassDropFiltered, hepTopTagPFJetsCHS, ak8PFJetsCHSConstituents, puppi
 from RecoJets.Configuration.RecoPFJets_cff import ak4PFJets, ak8PFJetsCHSSoftDrop, ak8PFJetsCHSSoftDropMass, ak8PFJetsCHSPruned, ak8PFJetsCHSPrunedMass, ak8PFJetsCHSTrimmed, ak8PFJetsCHSTrimmedMass, ak8PFJetsCHSFiltered, ak8PFJetsCHSFilteredMass, ak4PFJetsCHS, ca15PFJetsCHSMassDropFiltered, ak8PFJetsCHSConstituents, puppi
+from RecoJets.JetProducers.caTopTaggers_cff import hepTopTagPFJetsCHS
 from RecoJets.Configuration.RecoGenJets_cff import ak4GenJets
 from RecoJets.JetProducers.SubJetParameters_cfi import SubJetParameters
 from RecoJets.JetProducers.PFJetParameters_cfi import *
@@ -572,7 +572,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					) 
 
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets', selectedPatJets.clone( src = patJets+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets', cut = CutSubjet ) )
-			getattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedSubjets').addTagInfos = cms.bool(True)
 
 			## Establish references between PATified fat jets and subjets using the BoostedJetMerger
 			setattr( proc, 'selectedPatJets'+jetALGO+'PF'+PUMethod+postFix+'PrunedPacked', 
@@ -731,7 +730,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					)
 
 			setattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+postFix+'Subjets', selectedPatJets.clone( src = 'patJetsCMSTopTag'+PUMethod+postFix+'Subjets', cut = Cut ) )
-			getattr( proc, 'selectedPatJetsCMSTopTag'+PUMethod+postFix+'Subjets' ).addTagInfos = cms.bool(True)
 
 			setattr( proc, 'patJetsCMSTopTag'+PUMethod+postFix+'Packed', 
 					cms.EDProducer("BoostedJetMerger",
