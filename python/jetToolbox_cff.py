@@ -47,7 +47,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addPUJetID=False,
 		addQJets=False,
 		addQGTagger=False, QGjetsLabel='chs',
-		addEnergyCorrFunc=False, ecfBeta = 1.0, maxECF=3,
+		addEnergyCorrFunc=False, addEnergyCorrFuncSubjets=False,
 		):
 
 	runOnData = not runOnMC
@@ -904,19 +904,70 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	###### Energy Correlation Functions
 	if addEnergyCorrFunc:
-		from RecoJets.JetProducers.ECF_cfi import ECF 
-		rangeECF = range(1,maxECF+1)
-		setattr( proc, jetalgo+'PFJets'+PUMethod+postFix+'ECF', ECF.clone(
-				src = cms.InputTag( ( jetalgo+'PFJets'+PUMethod if not updateCollection else updateCollection ) ),
-				Njets = cms.vuint32( rangeECF ),
-				beta = cms.double( ecfBeta ) 
-				))
+		if PUMethod!="Puppi" or (addSoftDrop==False and addSoftDropSubjets==False):
+			raise ValueError("addEnergyCorrFunc only supported for Puppi w/ addSoftDrop or addSoftDropSubjets")
+		from RecoJets.JetProducers.ECF_cff import ecfNbeta1, ecfNbeta2
+		setattr(proc, 'nb1'+jetALGO+PUMethod+postFix+'SoftDrop', ecfNbeta1.clone(src = cms.InputTag(jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'), cuts = cms.vstring('', '', 'pt > 250')))
+		setattr(proc, 'nb2'+jetALGO+PUMethod+postFix+'SoftDrop', ecfNbeta2.clone(src = cms.InputTag(jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'), cuts = cms.vstring('', '', 'pt > 250')))
+		elemToKeep += [ 'keep *_'+'nb1'+jetALGO+PUMethod+postFix+'SoftDrop'+'_*_*', 'keep *_'+'nb2'+jetALGO+PUMethod+postFix+'SoftDrop'+'_*_*']
+		jetSeq += getattr(proc, 'nb1'+jetALGO+PUMethod+postFix+'SoftDrop')
+		jetSeq += getattr(proc, 'nb2'+jetALGO+PUMethod+postFix+'SoftDrop')
+		toolsUsed.extend(['nb1'+jetALGO+PUMethod+postFix+'SoftDrop','nb2'+jetALGO+PUMethod+postFix+'SoftDrop'])
 
-		elemToKeep += [ 'keep *_'+jetalgo+'PFJets'+PUMethod+postFix+'ECF_*_*'] 
-		for ecf in rangeECF: getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [ jetalgo+'PFJets'+PUMethod+postFix+'ECF:ecf'+str(ecf) ]
-		jetSeq += getattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'ECF' )
-		toolsUsed.append( jetalgo+'PFJets'+PUMethod+postFix+'ECF' )
-	
+		# set up user floats
+		getattr(proc, patJets+jetALGO+'PF'+PUMethod+postFix+'SoftDrop').userData.userFloats.src += [
+			'nb1'+jetALGO+PUMethod+postFix+'SoftDrop'+':ecfN2',
+			'nb1'+jetALGO+PUMethod+postFix+'SoftDrop'+':ecfN3',
+			'nb2'+jetALGO+PUMethod+postFix+'SoftDrop'+':ecfN2',
+			'nb2'+jetALGO+PUMethod+postFix+'SoftDrop'+':ecfN3',
+		]
+		# rekey the groomed ECF value maps to the ungroomed reco jets, which will then be picked
+		# up by PAT in the user floats. 
+		setattr(proc, jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'+'ValueMap',
+			cms.EDProducer("RecoJetToPatJetDeltaRValueMapProducer",
+				src = cms.InputTag(jetalgo+'PFJets'+PUMethod+postFix),
+				matched = cms.InputTag(patJets+jetALGO+'PF'+PUMethod+postFix+'SoftDrop'),
+				distMax = cms.double(jetSize),
+				values = cms.vstring([
+					'userFloat("'+'nb1'+jetALGO+PUMethod+postFix+'SoftDrop'+':ecfN2'+'")',
+					'userFloat("'+'nb1'+jetALGO+PUMethod+postFix+'SoftDrop'+':ecfN3'+'")',
+					'userFloat("'+'nb2'+jetALGO+PUMethod+postFix+'SoftDrop'+':ecfN2'+'")',
+					'userFloat("'+'nb2'+jetALGO+PUMethod+postFix+'SoftDrop'+':ecfN3'+'")',
+				]),
+				valueLabels = cms.vstring( [
+					'nb1'+jetALGO+PUMethod+postFix+'SoftDrop'+'N2',
+					'nb1'+jetALGO+PUMethod+postFix+'SoftDrop'+'N3',
+					'nb2'+jetALGO+PUMethod+postFix+'SoftDrop'+'N2',
+					'nb2'+jetALGO+PUMethod+postFix+'SoftDrop'+'N3',
+				]),
+			)
+		)
+		getattr(proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [
+			jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'+'ValueMap'+':'+'nb1'+jetALGO+PUMethod+postFix+'SoftDrop'+'N2',
+			jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'+'ValueMap'+':'+'nb1'+jetALGO+PUMethod+postFix+'SoftDrop'+'N3',
+			jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'+'ValueMap'+':'+'nb2'+jetALGO+PUMethod+postFix+'SoftDrop'+'N2',
+			jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop'+'ValueMap'+':'+'nb2'+jetALGO+PUMethod+postFix+'SoftDrop'+'N3',
+		]
+
+	if addEnergyCorrFuncSubjets:
+		if PUMethod!="Puppi" or addSoftDropSubjets==False:
+			raise ValueError("addEnergyCorrFuncSubjets only supported for Puppi w/ addSoftDropSubjets")
+		from RecoJets.JetProducers.ECF_cff import ecfNbeta1, ecfNbeta2
+		setattr(proc, 'nb1'+jetALGO+PUMethod+postFix+'SoftDropSubjets', ecfNbeta1.clone(src = cms.InputTag(jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop','SubJets')))
+		setattr(proc, 'nb2'+jetALGO+PUMethod+postFix+'SoftDropSubjets', ecfNbeta2.clone(src = cms.InputTag(jetalgo+'PFJets'+PUMethod+postFix+'SoftDrop','SubJets')))
+		elemToKeep += [ 'keep *_'+'nb1'+jetALGO+PUMethod+postFix+'SoftDropSubjets'+'_*_*', 'keep *_'+'nb2'+jetALGO+PUMethod+postFix+'SoftDropSubjets'+'_*_*']
+		jetSeq += getattr(proc, 'nb1'+jetALGO+PUMethod+postFix+'SoftDropSubjets')
+		jetSeq += getattr(proc, 'nb2'+jetALGO+PUMethod+postFix+'SoftDropSubjets')
+		toolsUsed.extend(['nb1'+jetALGO+PUMethod+postFix+'SoftDropSubjets','nb2'+jetALGO+PUMethod+postFix+'SoftDropSubjets'])
+
+		# set up user floats
+		getattr(proc, patJets+jetALGO+'PF'+PUMethod+postFix+'SoftDropSubjets').userData.userFloats.src += [
+			'nb1'+jetALGO+PUMethod+postFix+'SoftDropSubjets'+':ecfN2',
+			'nb1'+jetALGO+PUMethod+postFix+'SoftDropSubjets'+':ecfN3',
+			'nb2'+jetALGO+PUMethod+postFix+'SoftDropSubjets'+':ecfN2',
+			'nb2'+jetALGO+PUMethod+postFix+'SoftDropSubjets'+':ecfN3',
+		]
+
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
 
