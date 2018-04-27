@@ -99,7 +99,7 @@ jetToolbox(process,
 	'out',
 	PUMethod = 'Puppi',
 	miniAOD = True,
-	runOnMC = False,
+	#runOnMC = False,
 	postFix='Clean',
 	Cut = 'pt>170.',
 	addPruning = True,
@@ -153,18 +153,18 @@ jetToolbox( process, 'ak4', 'ak4JetSubs', 'out', addQGTagger=True, addPUJetID=Tr
 
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 process.source = cms.Source("PoolSource",
 #		fileNames = cms.untracked.vstring(#'file:example.root'
 		fileNames = cms.untracked.vstring(
-			'/store/data/Run2016G/JetHT/MINIAOD/PromptReco-v1/000/280/002/00000/E82E26C7-4375-E611-AE7F-FA163E48F736.root'
-			#'/store/mc/RunIIFall17MiniAOD/VectorDiJet1Jet_madgraph_Mphi50Mchi1_13TeV/MINIAODSIM/94X_mc2017_realistic_v11-v1/00000/64BF8D7C-C310-E811-ACBE-A0369FC5E9A4.root'
+			#'/store/data/Run2016G/JetHT/MINIAOD/PromptReco-v1/000/280/002/00000/E82E26C7-4375-E611-AE7F-FA163E48F736.root'
+			'/store/mc/RunIIFall17MiniAOD/QCD_HT1000to1500_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/94X_mc2017_realistic_v10-v1/00000/02961665-F9F9-E711-87B5-0026B93F49B0.root'
 			#'/store/relval/CMSSW_9_4_5_cand1/JetHT/MINIAOD/94X_dataRun2_relval_v11_RelVal_rmaod_jetHT2017B-v1/10000/18B5E95F-992E-E811-9422-0CC47A78A418.root'
 			),
 		)
 
-from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
-process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
+#from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
+#process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
 
 #from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValProdTTbarAODSIM
 #process.source.fileNames = filesRelValProdTTbarAODSIM
