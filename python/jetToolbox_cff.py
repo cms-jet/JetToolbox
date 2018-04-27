@@ -4,7 +4,8 @@
 ####   Python function for easy access of 
 ####   jet substructure tools implemented in CMS
 ####
-####   Alejandro Gomez Espinosa (gomez@physics.rutgers.edu)
+####   Alejandro Gomez Espinosa (alejandro.gomez@cern.ch)
+####   with several contributions from others
 ####
 ###############################################
 import FWCore.ParameterSet.Config as cms
@@ -47,7 +48,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addPUJetID=False,
 		addQJets=False,
 		addQGTagger=False, QGjetsLabel='chs',
-		addEnergyCorrFunc=False, addEnergyCorrFuncSubjets=False,
+		addEnergyCorrFunc=False, 
+		addEnergyCorrFuncSubjets=False,
 		):
 
 	runOnData = not runOnMC

@@ -3,11 +3,11 @@ Python framework for configuration of jet tools via the jet toolbox.
 
 ## Instructions
 
-Check the branch for the correspondent release. This branch is for *CMSSW_9_1_X*, then for example:
+Check the branch for the correspondent release. This branch is for *CMSSW_9_4_X* and higher, then for example:
 ```
-cmsrel CMSSW_9_1_1_patch1/
-cd CMSSW_9_1_1_patch1/src/
-git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_91X_v1
+cmsrel CMSSW_9_4_4/
+cd CMSSW_9_4_4/src/
+git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_94X_v1
 scram b -j 18
 ```
 To test the toolbox:
