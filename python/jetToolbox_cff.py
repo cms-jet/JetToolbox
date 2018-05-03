@@ -21,7 +21,7 @@ from RecoJets.JetProducers.CATopJetParameters_cfi import *
 from PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff import *
 from PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi import selectedPatJets
 from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection, updateJetCollection
-
+from collections import OrderedDict
 
 def jetToolbox( proc, jetType, jetSequence, outputFile,
 		updateCollection='', updateCollectionSubjets='',
@@ -50,6 +50,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addQGTagger=False, QGjetsLabel='chs',
 		addEnergyCorrFunc=False, 
 		addEnergyCorrFuncSubjets=False,
+		printModuleNames=False,
 		):
 
 	runOnData = not runOnMC
@@ -100,7 +101,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	pvLabel = ''
 	tvLabel = ''
 	toolsUsed = []
-	mod = {}
+	mod = OrderedDict()
 
 	### List of Jet Corrections
 	if not set(JETCorrLevels).issubset(set(JECLevels)): 
@@ -1095,3 +1096,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if runOnData:
 		from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
 		removeMCMatching(proc, names=['Jets'], outputModules=[outputFile])
+
+	if printModuleNames:
+		print '|---- jetToolBox: List of modules created (and other internal names):'
+		for m in mod:
+			print '      '+m+' = '+mod[m]
