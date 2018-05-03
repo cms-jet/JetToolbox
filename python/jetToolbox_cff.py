@@ -339,9 +339,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				)
 		patJets = 'patJets'
 		patSubJets = ''
-		selectedPatJets = 'selectedPatJets'
+		selPatJets = 'selectedPatJets'
 		mod["PATJets"] = patJets+mod["PATJetsLabelPost"]
-		mod["selPATJets"] = selectedPatJets+mod["PATJetsLabelPost"]
+		mod["selPATJets"] = selPatJets+mod["PATJetsLabelPost"]
 		getattr(proc, mod["PATJets"]).addTagInfos = cms.bool(True)
 
 		if 'CS' in PUMethod: getattr( proc, mod["PATJets"] ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
@@ -376,7 +376,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		patJets = 'updatedPatJets'
 		patSubJets = ''
 		mod["PATJets"] = patJets+mod["PATJetsLabelPost"]
-		mod["selPATJets"] = selectedPatJets+mod["PATJetsLabelPost"]
+		mod["selPATJets"] = selPatJets+mod["PATJetsLabelPost"]
 
 		if updateCollectionSubjets:
 			print '|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollectionSubjets+' collection for subjets/groomers.'
@@ -469,7 +469,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					)
 			mod["PATJetsSoftDrop"] = patJets+mod["PATJetsSoftDropLabel"]
-			mod["selPATJetsSoftDrop"] = selectedPatJets+mod["PATJetsSoftDropLabel"]
+			mod["selPATJetsSoftDrop"] = selPatJets+mod["PATJetsSoftDropLabel"]
 
 			setattr( proc, mod["selPATJetsSoftDrop"], selectedPatJets.clone( src = mod["PATJetsSoftDrop"], cut = Cut ) )
 
@@ -498,7 +498,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					) 
 			mod["PATSubjetsSoftDrop"] = patJets+mod["PATSubjetsSoftDropLabel"]
-			mod["selPATSubjetsSoftDrop"] = selectedPatJets+mod["PATSubjetsSoftDropLabel"]
+			mod["selPATSubjetsSoftDrop"] = selPatJets+mod["PATSubjetsSoftDropLabel"]
 
 			setattr( proc, mod["selPATSubjetsSoftDrop"], selectedPatJets.clone( src = mod["PATSubjetsSoftDrop"], cut = CutSubjet ))
 
@@ -588,7 +588,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					)
 			mod["PATJetsPruned"] = patJets+mod["PATJetsPrunedLabel"]
-			mod["selPATJetsPruned"] = selectedPatJets+mod["PATJetsPrunedLabel"]
+			mod["selPATJetsPruned"] = selPatJets+mod["PATJetsPrunedLabel"]
 
 			setattr( proc, mod["selPATJetsPruned"], selectedPatJets.clone( src = mod["PATJetsPruned"], cut = Cut ) )
 
@@ -617,7 +617,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					outputModules = ['outputFile']
 					) 
 			mod["PATSubjetsPruned"] = patJets+mod["PATSubjetsPrunedLabel"]
-			mod["selPATSubjetsPruned"] = selectedPatJets+mod["PATSubjetsPrunedLabel"]
+			mod["selPATSubjetsPruned"] = selPatJets+mod["PATSubjetsPrunedLabel"]
 
 			setattr( proc, mod["selPATSubjetsPruned"], selectedPatJets.clone( src = mod["PATSubjetsPruned"], cut = CutSubjet ) )
 
@@ -759,7 +759,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					genParticles = cms.InputTag(genParticlesLabel)
 					)
 			mod["PATJetsCMSTopTag"] = patJets+mod["PATJetsCMSTopTagLabel"]
-			mod["selPATJetsCMSTopTag"] = selectedPatJets+mod["PATJetsCMSTopTagLabel"]
+			mod["selPATJetsCMSTopTag"] = selPatJets+mod["PATJetsCMSTopTagLabel"]
 			getattr(proc,mod["PATJetsCMSTopTag"]).addTagInfos = True
 			getattr(proc,mod["PATJetsCMSTopTag"]).tagInfoSources = cms.VInputTag( cms.InputTag('CATopTagInfos'))
 			setattr( proc, mod["selPATJetsCMSTopTag"], selectedPatJets.clone( src = mod["PATJetsCMSTopTag"], cut = Cut ) )
@@ -788,7 +788,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					genParticles = cms.InputTag(genParticlesLabel)
 					)
 			mod["PATSubjetsCMSTopTag"] = patJets+mod["PATSubjetsCMSTopTagLabel"]
-			mod["selPATSubjetsCMSTopTag"] = selectedPatJets+mod["PATSubjetsCMSTopTagLabel"]
+			mod["selPATSubjetsCMSTopTag"] = selPatJets+mod["PATSubjetsCMSTopTagLabel"]
 
 			setattr( proc, mod["selPATSubjetsCMSTopTag"], selectedPatJets.clone( src = mod["PATSubjetsCMSTopTag"], cut = Cut ) )
 
@@ -1051,7 +1051,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
-	mod["selPATJets"] = selectedPatJets+mod["PATJetsLabelPost"]
+	mod["selPATJets"] = selPatJets+mod["PATJetsLabelPost"]
 	setattr( proc, mod["selPATJets"], selectedPatJets.clone( src = mod["PATJets"], cut = Cut ) )
 	elemToKeep += [ 'keep *_'+mod["selPATJets"]+'_*_*' ]
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_calo*_*' ]
@@ -1059,7 +1059,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	if updateCollectionSubjets:
 		mod["PATSubjets"] = patJets+mod["PATSubjetsLabel"]
-		mod["selPATSubjets"] = selectedPatJets+mod["PATSubjetsLabel"]
+		mod["selPATSubjets"] = selPatJets+mod["PATSubjetsLabel"]
 		setattr( proc, mod["selPATSubjets"], selectedPatJets.clone( src = mod["PATSubjets"], cut = Cut ) )
 		elemToKeep += [ 'keep *_'+mod["selPATSubjets"]+'__*' ]
 
