@@ -728,7 +728,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 						)
 					)
 			
-			setattr( proc, "CATopTagInfos", 
+			mod["CATopTagInfos"] = "CATopTagInfos"+postFix
+			setattr( proc, mod["CATopTagInfos"],
 					cms.EDProducer("CATopJetTagger",
 						src = cms.InputTag(mod["PFJetsCMSTopTag"]),
 						TopMass = cms.double(171),
@@ -762,7 +763,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			mod["PATJetsCMSTopTag"] = patJets+mod["PATJetsCMSTopTagLabel"]
 			mod["selPATJetsCMSTopTag"] = selPatJets+mod["PATJetsCMSTopTagLabel"]
 			getattr(proc,mod["PATJetsCMSTopTag"]).addTagInfos = True
-			getattr(proc,mod["PATJetsCMSTopTag"]).tagInfoSources = cms.VInputTag( cms.InputTag('CATopTagInfos'))
+			getattr(proc,mod["PATJetsCMSTopTag"]).tagInfoSources = cms.VInputTag( cms.InputTag(mod["CATopTagInfos"]))
 			setattr( proc, mod["selPATJetsCMSTopTag"], selectedPatJets.clone( src = mod["PATJetsCMSTopTag"], cut = Cut ) )
 
 			mod["PATSubjetsCMSTopTagLabel"] = mod["PATJetsCMSTopTagLabel"]+'Subjets'
