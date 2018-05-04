@@ -52,6 +52,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addQGTagger=False, QGjetsLabel='chs',
 		addEnergyCorrFunc=False, 
 		addEnergyCorrFuncSubjets=False,
+		# set this to false to disable creation of jettoolbox.root
+		# then you need to associate the jetTask to a Path or EndPath manually in your config
+		associateTask=True,
 		# 0 = no printouts, 1 = warnings only, 2 = warnings & info, 3 = warnings, info, debug
 		verbosity=2,
 		):
@@ -1066,19 +1069,19 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				outputCommands = cms.untracked.vstring( elemToKeep ) ) )
 
 	##### (Temporary?) fix to replace unschedule mode
-	if hasattr(proc, 'myTask'): 
-		getattr( proc, 'myTask', cms.Task() ).add(*[getattr(proc,prod) for prod in proc.producers_()])
-		getattr( proc, 'myTask', cms.Task() ).add(*[getattr(proc,filt) for filt in proc.filters_()])
+	if hasattr(proc, 'jetTask'): 
+		getattr( proc, 'jetTask', cms.Task() ).add(*[getattr(proc,prod) for prod in proc.producers_()])
+		getattr( proc, 'jetTask', cms.Task() ).add(*[getattr(proc,filt) for filt in proc.filters_()])
 	else:
-		setattr( proc, 'myTask', cms.Task() )
-		getattr( proc, 'myTask', cms.Task() ).add(*[getattr(proc,prod) for prod in proc.producers_()])
-		getattr( proc, 'myTask', cms.Task() ).add(*[getattr(proc,filt) for filt in proc.filters_()])
+		setattr( proc, 'jetTask', cms.Task() )
+		getattr( proc, 'jetTask', cms.Task() ).add(*[getattr(proc,prod) for prod in proc.producers_()])
+		getattr( proc, 'jetTask', cms.Task() ).add(*[getattr(proc,filt) for filt in proc.filters_()])
 
-	if hasattr(proc, 'endpath'): 
-		getattr( proc, 'endpath').associate( getattr( proc, 'myTask', cms.Task() ) )
-	else: 
-		setattr( proc, 'endpath',
-				cms.EndPath(getattr(proc, outputFile), getattr( proc, 'myTask', cms.Task() )) )
+	if associateTask:
+		if hasattr(proc, 'endpath'): 
+			getattr( proc, 'endpath').associate( getattr( proc, 'jetTask', cms.Task() ) )
+		else: 
+			setattr( proc, 'endpath', cms.EndPath(getattr(proc, outputFile), getattr( proc, 'jetTask', cms.Task() )) )
 
 	#### removing mc matching for data
 	if runOnData:
