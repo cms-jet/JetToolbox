@@ -49,7 +49,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addQGTagger=False, QGjetsLabel='chs',
 		addEnergyCorrFunc=False, 
 		addEnergyCorrFuncSubjets=False,
-		printModuleNames=False,
+		# 0 = no printouts, 1 = warnings only, 2 = warnings & info, 3 = warnings, info, debug
+		verbosity=2,
 		):
 
 	runOnData = not runOnMC
@@ -60,8 +61,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	###############################################################################
 	#######  Verifying some inputs and defining variables
 	###############################################################################
-	print('|---- jetToolbox: Initializing collection...')
-	if newPFCollection: print('|---- jetToolBox: Using '+ nameNewPFCollection +' as PFCandidates collection')
+	if verbosity>=2: print('|---- jetToolbox: Initializing collection...')
+	if newPFCollection and verbosity>=2: print('|---- jetToolBox: Using '+ nameNewPFCollection +' as PFCandidates collection')
 	supportedJetAlgos = { 'ak': 'AntiKt', 'ca' : 'CambridgeAachen', 'kt' : 'Kt' }
 	recommendedJetAlgos = [ 'ak4', 'ak8', 'ca4', 'ca8', 'ca10', 'ca15' ]
 	payloadList = [ 'None',
@@ -87,7 +88,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	### Trick for uppercase/lowercase algo name
 	jetALGO = jetAlgo.upper()+size
 	jetalgo = jetAlgo.lower()+size
-	if jetalgo not in recommendedJetAlgos: print('|---- jetToolBox: CMS recommends the following jet algorithms: '+' '.join(recommendedJetAlgos)+'. You are using '+jetalgo+' .')
+	if jetalgo not in recommendedJetAlgos and verbosity>=1: print('|---- jetToolBox: CMS recommends the following jet algorithms: '+' '.join(recommendedJetAlgos)+'. You are using '+jetalgo+' .')
 
 
 	#################################################################################
@@ -137,7 +138,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		#### For MiniAOD
 		if miniAOD:
 
-			print('|---- jetToolBox: JETTOOLBOX RUNNING ON MiniAOD FOR '+jetALGO+' JETS USING '+PUMethod)
+			if verbosity>=2: print('|---- jetToolBox: JETTOOLBOX RUNNING ON MiniAOD FOR '+jetALGO+' JETS USING '+PUMethod)
 
 			genParticlesLabel = 'prunedGenParticles'
 			pvLabel = 'offlineSlimmedPrimaryVertices'
@@ -168,7 +169,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		#### For AOD
 		else:
-			print('|---- jetToolBox: JETTOOLBOX RUNNING ON AOD FOR '+jetALGO+' JETS USING '+PUMethod)
+			if verbosity>=2: print('|---- jetToolBox: JETTOOLBOX RUNNING ON AOD FOR '+jetALGO+' JETS USING '+PUMethod)
 
 			genParticlesLabel = 'genParticles'
 			pvLabel = 'offlinePrimaryVertices'
@@ -190,7 +191,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if 'Puppi' in PUMethod:
 			if ('puppi' in tmpPfCandName): 
 				srcForPFJets = pfCand
-				print('|---- jetToolBox: Not running puppi algorithm because keyword puppi was specified in nameNewPFCollection, but applying puppi corrections.')
+				if verbosity>=1: print('|---- jetToolBox: Not running puppi algorithm because keyword puppi was specified in nameNewPFCollection, but applying puppi corrections.')
 			else: 
 				proc.load('CommonTools.PileupAlgos.Puppi_cff')
 				puppi.candName = cms.InputTag( pfCand ) 
@@ -216,7 +217,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			if ('sk' in tmpPfCandName): 
 				srcForPFJets = pfCand
-				print('|---- jetToolBox: Not running softkiller algorithm because keyword SK was specified in nameNewPFCollection, but applying SK corrections.')
+				if verbosity>=1: print('|---- jetToolBox: Not running softkiller algorithm because keyword SK was specified in nameNewPFCollection, but applying SK corrections.')
 			else:
 				proc.load('CommonTools.PileupAlgos.softKiller_cfi')
 				getattr( proc, 'softKiller' ).PFCandidates = cms.InputTag( pfCand ) 
@@ -254,7 +255,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			if miniAOD:
 				if ('chs' in tmpPfCandName): 
 					srcForPFJets = pfCand
-					print('|---- jetToolBox: Not running CHS algorithm because keyword CHS was specified in nameNewPFCollection, but applying CHS corrections.')
+					if verbosity>=1: print('|---- jetToolBox: Not running CHS algorithm because keyword CHS was specified in nameNewPFCollection, but applying CHS corrections.')
 				else: 
 					setattr( proc, 'chs', cms.EDFilter('CandPtrSelector', src = cms.InputTag( pfCand ), cut = cms.string('fromPV')) )
 					jetSeq += getattr(proc, 'chs')
@@ -303,7 +304,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if 'None' in JETCorrPayload: JEC = None
 		else: JEC = ( JETCorrPayload.replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )   ### temporary
 		#else: JEC = ( JETCorrPayload., JETCorrLevels, 'None' ) 
-		print('|---- jetToolBox: Applying these corrections: '+str(JEC))
+		if verbosity>=2: print('|---- jetToolBox: Applying these corrections: '+str(JEC))
 
 		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger:
 			if 'None' in subJETCorrPayload: subJEC = None
@@ -346,7 +347,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		if 'CS' in PUMethod: getattr( proc, mod["PATJets"] ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
 	else:
-		print('|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollection+' collection')
+		if verbosity>=2: print('|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollection+' collection')
 		genParticlesLabel = 'prunedGenParticles'
 		pvLabel = 'offlineSlimmedPrimaryVertices'
 		svLabel = 'slimmedSecondaryVertices'
@@ -359,7 +360,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		if 'Puppi' in updateCollection: PUMethod='Puppi'
 		JEC = ( JETCorrPayload, JETCorrLevels, 'None' )   ### temporary
-		print('|---- jetToolBox: Applying these corrections: '+str(JEC))
+		if verbosity>=2: print('|---- jetToolBox: Applying these corrections: '+str(JEC))
 		updateJetCollection(
 				proc,
 				postfix = postFix,
@@ -371,14 +372,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		mod["PATJetsCorrFactors"] = 'patJetCorrFactors'+mod["PATJetsLabelPost"]
 		getattr( proc, mod["PATJetsCorrFactors"] ).payload = JETCorrPayload
 		getattr( proc, mod["PATJetsCorrFactors"] ).levels = JETCorrLevels
-		if bTagDiscriminators: print('|---- jetToolBox: Adding these bTagDiscriminators: '+str(bTagDiscriminators)+' in the jet collection.')
+		if bTagDiscriminators and verbosity>=2: print('|---- jetToolBox: Adding these bTagDiscriminators: '+str(bTagDiscriminators)+' in the jet collection.')
 		patJets = 'updatedPatJets'
 		patSubJets = ''
 		mod["PATJets"] = patJets+mod["PATJetsLabelPost"]
 		mod["selPATJets"] = selPatJets+mod["PATJetsLabelPost"]
 
 		if updateCollectionSubjets:
-			print('|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollectionSubjets+' collection for subjets/groomers.')
+			if verbosity>=2: print('|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollectionSubjets+' collection for subjets/groomers.')
 			if 'SoftDrop' in updateCollectionSubjets: updateSubjetLabel = 'SoftDrop'
 			else: updateSubjetLabel = 'Pruned'
 			mod["PATSubjetsLabel"] = jetALGO+'PF'+PUMethod+postFix+updateSubjetLabel+'Packed'
@@ -397,10 +398,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			getattr( proc, mod["PATSubjetsCorrFactors"] ).payload = subJETCorrPayload
 			getattr( proc, mod["PATSubjetsCorrFactors"] ).levels = subJETCorrLevels
 			patSubJets = 'updatedPatJets'+mod["PATSubjetsLabel"]
-			if bTagDiscriminators: print('|---- jetToolBox: Adding these bTagDiscriminators: '+str(bTagDiscriminators)+' in the subjet collection.')
+			if bTagDiscriminators and verbosity>=2: print('|---- jetToolBox: Adding these bTagDiscriminators: '+str(bTagDiscriminators)+' in the subjet collection.')
 
 		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger or addMassDrop or addHEPTopTagger or addPruning or addSoftDrop: 
-			print('|---- jetToolBox: You are trying to add a groomer variable into a clustered jet collection. THIS IS NOT RECOMMENDED, it is recommended to recluster jets instead using a plain jetToolbox configuration. Please use this feature at your own risk.')
+			if verbosity>=1: print('|---- jetToolBox: You are trying to add a groomer variable into a clustered jet collection. THIS IS NOT RECOMMENDED, it is recommended to recluster jets instead using a plain jetToolbox configuration. Please use this feature at your own risk.')
 
 	mod["PFJetsOrUpdate"] = mod["PFJets"] if not updateCollection else updateCollection
 
@@ -527,7 +528,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				 )
 			jetSeq += getattr(proc, mod["packedPATJetsSoftDrop"])
 			elemToKeep += [ 'keep *_'+mod["packedPATJetsSoftDrop"]+'_*_*' ]
-			print('|---- jetToolBox: Creating '+mod["packedPATJetsSoftDrop"]+' collection with SoftDrop subjets.')
+			if verbosity>=2: print('|---- jetToolBox: Creating '+mod["packedPATJetsSoftDrop"]+' collection with SoftDrop subjets.')
 
 
 
@@ -646,7 +647,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				 )
 			jetSeq += getattr(proc, mod["packedPATJetsPruned"])
 			elemToKeep += [ 'keep *_'+mod["packedPATJetsPruned"]+'_*_*' ]
-			print('|---- jetToolBox: Creating '+mod["packedPATJetsPruned"]+' collection with Pruned subjets.')
+			if verbosity>=2: print('|---- jetToolBox: Creating '+mod["packedPATJetsPruned"]+' collection with Pruned subjets.')
 
 
 	if addTrimming:
@@ -878,7 +879,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			mod["NsubSubjets"] = mod["PATSubjetsSoftDropLabel"]
 			mod["NsubPATSubjets"] = mod["PATSubjetsSoftDrop"]
 			if updateCollectionSubjets:
-				print('|---- jetToolBox: Using updateCollection option. ASSUMING MINIAOD collection '+ updateCollectionSubjets +' for Nsubjettiness of subjets.')
+				if verbosity>=2: print('|---- jetToolBox: Using updateCollection option. ASSUMING MINIAOD collection '+ updateCollectionSubjets +' for Nsubjettiness of subjets.')
 		elif addPrunedSubjets:
 			mod["NsubGroomer"] = mod["PFJetsPruned"]
 			mod["NsubSubjets"] = mod["PATSubjetsPrunedLabel"]
@@ -930,7 +931,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	####### Pileup JetID
 	if addPUJetID:
 		if ( 'ak4' in jetalgo ) and ( PUMethod not in ['CS','SK'] ):
-			if PUMethod=="Puppi": print('|---- jetToolBox: PUJetID is not yet optimized for ak4 PFjets with PUPPI. USE ONLY FOR TESTING.')
+			if PUMethod=="Puppi" and verbosity>=1: print('|---- jetToolBox: PUJetID is not yet optimized for ak4 PFjets with PUPPI. USE ONLY FOR TESTING.')
 			from RecoJets.JetProducers.pileupjetidproducer_cfi import pileupJetIdCalculator,pileupJetIdEvaluator
 
 			mod["PUJetIDCalc"] = mod["PATJetsLabelPost"]+'pileupJetIdCalculator'
@@ -1046,9 +1047,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		elemToKeep += [ 'keep *_'+mod["selPATSubjets"]+'__*' ]
 
 
-	if len(toolsUsed) > 0 : print('|---- jetToolBox: Running '+', '.join(toolsUsed)+'.')
-	print('|---- jetToolBox: Creating '+mod["selPATJets"]+' collection.')
-	if updateCollectionSubjets: print('|---- jetToolBox: Creating '+mod["selPATSubjets"]+' collection.')
+	if len(toolsUsed) > 0 and verbosity>=2: print('|---- jetToolBox: Running '+', '.join(toolsUsed)+'.')
+	if verbosity>=2: print('|---- jetToolBox: Creating '+mod["selPATJets"]+' collection.')
+	if updateCollectionSubjets and verbosity>=2: print('|---- jetToolBox: Creating '+mod["selPATSubjets"]+' collection.')
 
 	### "return"
 	setattr(proc, jetSequence, jetSeq)
@@ -1078,7 +1079,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
 		removeMCMatching(proc, names=['Jets'], outputModules=[outputFile])
 
-	if printModuleNames:
+	if verbosity>=3:
 		print('|---- jetToolBox: List of modules created (and other internal names):')
 		for m in mod:
 			print('      '+m+' = '+mod[m])
