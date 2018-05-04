@@ -515,7 +515,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			toolsUsed.append( mod["selPATJetsSoftDropPacked"]+':SubJets' )
 
 			## Pack fat jets with subjets
-			mod["packedPATJetsSoftDrop"] = 'packedPatJets'+mod["PATSubjetsSoftDropLabel"]
+			mod["packedPATJetsSoftDrop"] = 'packedPatJets'+mod["PATJetsSoftDropLabel"]
 			setattr( proc, mod["packedPATJetsSoftDrop"],
 				 cms.EDProducer("JetSubstructurePacker",
 						jetSrc=cms.InputTag(mod["selPATJets"]),
@@ -671,7 +671,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		elemToKeep += [ 'keep *_'+mod["TrimmedMass"]+'_*_*'] 
 		jetSeq += getattr(proc, mod["PFJetsTrimmed"])
 		jetSeq += getattr(proc, mod["TrimmedMass"])
-		getattr( proc, mod["PFJetsTrimmed"]).userData.userFloats.src += [mod["TrimmedMass"]]
+		getattr( proc, mod["PATJets"]).userData.userFloats.src += [mod["TrimmedMass"]]
 		toolsUsed.append( mod["TrimmedMass"] )
 
 	if addFiltering:
@@ -700,7 +700,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		if 'CA' in jetALGO : 
 
-			mod["PFJetsCMSTopTag"] = mod["PFJets.replace"](jetalgo,"cmsTopTag")
+			mod["PFJetsCMSTopTag"] = mod["PFJets"].replace(jetalgo,"cmsTopTag")
 			setattr( proc, mod["PFJetsCMSTopTag"],
 					cms.EDProducer("CATopJetProducer",
 						PFJetParameters.clone( 
@@ -794,7 +794,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			setattr( proc, mod["selPATSubjetsCMSTopTag"], selectedPatJets.clone( src = mod["PATSubjetsCMSTopTag"], cut = Cut ) )
 
 			mod["PATJetsCMSTopTagPacked"] = mod["PATJetsCMSTopTag"]+'Packed'
-			setattr( proc, mod["packedPATJetsCMSTopTag"],
+			setattr( proc, mod["PATJetsCMSTopTagPacked"],
 					cms.EDProducer("BoostedJetMerger",
 						jetSrc=cms.InputTag(mod["PATJetsCMSTopTag"]),
 						subjetSrc=cms.InputTag(mod["PATSubjetsCMSTopTag"])
@@ -827,7 +827,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if addHEPTopTagger: 
 		if ( jetSize >= 1. ) and ( 'CA' in jetALGO ): 
 
-			mod["PFJetsHEPTopTag"] = mod["PFJets.replace"](jetalgo,"hepTopTag")
+			mod["PFJetsHEPTopTag"] = mod["PFJets"].replace(jetalgo,"hepTopTag")
 			mod["PFJetsHEPTopTagMass"] = mod["PFJetsHEPTopTag"]+'Mass'+jetALGO
 			setattr( proc, mod["PFJetsHEPTopTag"], hepTopTagPFJetsCHS.clone( src = cms.InputTag( mod["PFJetsConstituentsColonOrUpdate"] ) ) )
 			setattr( proc, mod["PFJetsHEPTopTagMass"], ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag(mod["PFJets"]), 
@@ -870,7 +870,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		mod["NsubGroomer"] = ''
 		mod["NsubSubjets"] = ''
-		mod["NsubPATJets"] = ''
+		mod["NsubPATSubjets"] = ''
 		if addSoftDropSubjets or updateCollectionSubjets:
 			mod["NsubGroomer"] = mod["PFJetsSoftDrop"]
 			mod["NsubSubjets"] = mod["PATSubjetsSoftDropLabel"]
@@ -1011,7 +1011,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				values = cms.vstring([
 					'userFloat("'+mod["ECFnb1"]+':ecfN2'+'")',
 					'userFloat("'+mod["ECFnb1"]+':ecfN3'+'")',
-					'userFloat("'+mod["ECFnb2"]+'SoftDrop'+':ecfN2'+'")',
+					'userFloat("'+mod["ECFnb2"]+':ecfN2'+'")',
 					'userFloat("'+mod["ECFnb2"]+':ecfN3'+'")',
 				]),
 				valueLabels = cms.vstring( [
