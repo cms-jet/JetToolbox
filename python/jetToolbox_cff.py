@@ -60,7 +60,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	###############################################################################
 	#######  Verifying some inputs and defining variables
 	###############################################################################
-	print '|---- jetToolbox: Initialyzing collection...'
+	print '|---- jetToolbox: Initializing collection...'
 	if newPFCollection: print '|---- jetToolBox: Using '+ nameNewPFCollection +' as PFCandidates collection'
 	supportedJetAlgos = { 'ak': 'AntiKt', 'ca' : 'CambridgeAachen', 'kt' : 'Kt' }
 	recommendedJetAlgos = [ 'ak4', 'ak8', 'ca4', 'ca8', 'ca10', 'ca15' ]
@@ -87,7 +87,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	### Trick for uppercase/lowercase algo name
 	jetALGO = jetAlgo.upper()+size
 	jetalgo = jetAlgo.lower()+size
-	if jetalgo not in recommendedJetAlgos: print '|---- jetToolBox: CMS recommends the following jet algoritms: '+' '.join(recommendedJetAlgos)+'. You are using', jetalgo,'.'
+	if jetalgo not in recommendedJetAlgos: print '|---- jetToolBox: CMS recommends the following jet algorithms: '+' '.join(recommendedJetAlgos)+'. You are using', jetalgo,'.'
 
 
 	#################################################################################
@@ -303,7 +303,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if 'None' in JETCorrPayload: JEC = None
 		else: JEC = ( JETCorrPayload.replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )   ### temporary
 		#else: JEC = ( JETCorrPayload., JETCorrLevels, 'None' ) 
-		print '|---- jetToolBox: Applying this corrections: '+str(JEC)
+		print '|---- jetToolBox: Applying these corrections: '+str(JEC)
 
 		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger:
 			if 'None' in subJETCorrPayload: subJEC = None
@@ -360,7 +360,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			return None
 		if 'Puppi' in updateCollection: PUMethod='Puppi'
 		JEC = ( JETCorrPayload, JETCorrLevels, 'None' )   ### temporary
-		print '|---- jetToolBox: Applying this corrections: '+str(JEC)
+		print '|---- jetToolBox: Applying these corrections: '+str(JEC)
 		updateJetCollection(
 				proc,
 				postfix = postFix,
@@ -372,7 +372,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		mod["PATJetsCorrFactors"] = 'patJetCorrFactors'+mod["PATJetsLabelPost"]
 		getattr( proc, mod["PATJetsCorrFactors"] ).payload = JETCorrPayload
 		getattr( proc, mod["PATJetsCorrFactors"] ).levels = JETCorrLevels
-		if bTagDiscriminators: print '|---- jetToolBox: Adding this bTagDiscriminators: '+str(bTagDiscriminators)+' in the jet collection.'
+		if bTagDiscriminators: print '|---- jetToolBox: Adding these bTagDiscriminators: '+str(bTagDiscriminators)+' in the jet collection.'
 		patJets = 'updatedPatJets'
 		patSubJets = ''
 		mod["PATJets"] = patJets+mod["PATJetsLabelPost"]
@@ -398,10 +398,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			getattr( proc, mod["PATSubjetsCorrFactors"] ).payload = subJETCorrPayload
 			getattr( proc, mod["PATSubjetsCorrFactors"] ).levels = subJETCorrLevels
 			patSubJets = 'updatedPatJets'+mod["PATSubjetsLabel"]
-			if bTagDiscriminators: print '|---- jetToolBox: Adding this bTagDiscriminators: '+str(bTagDiscriminators)+' in the subjet collection.'
+			if bTagDiscriminators: print '|---- jetToolBox: Adding these bTagDiscriminators: '+str(bTagDiscriminators)+' in the subjet collection.'
 
 		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger or addMassDrop or addHEPTopTagger or addPruning or addSoftDrop: 
-			print '|---- jetToolBox: You are trying to add a groomer variable into a clustered jet collection. THIS IS NOT RECOMMENDED, it is recommended to recluster jets instead using a plain jetToolbox configuration. Please use this feature by your own risk.'
+			print '|---- jetToolBox: You are trying to add a groomer variable into a clustered jet collection. THIS IS NOT RECOMMENDED, it is recommended to recluster jets instead using a plain jetToolbox configuration. Please use this feature at your own risk.'
 
 	mod["PFJetsOrUpdate"] = mod["PFJets"] if not updateCollection else updateCollection
 
@@ -952,12 +952,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 						)
 					)
 
-                        getattr( proc, mod["PATJets"]).userData.userFloats.src += [mod["PUJetIDEval"]+':fullDiscriminant']
-                        getattr( proc, mod["PATJets"]).userData.userInts.src += [mod["PUJetIDEval"]+':cutbasedId',mod["PUJetIDEval"]+':fullId']
-                        elemToKeep += ['keep *_'+mod["PUJetIDEval"]+'_*_*']
-                        toolsUsed.append( mod["PUJetIDEval"] )
+			getattr( proc, mod["PATJets"]).userData.userFloats.src += [mod["PUJetIDEval"]+':fullDiscriminant']
+			getattr( proc, mod["PATJets"]).userData.userInts.src += [mod["PUJetIDEval"]+':cutbasedId',mod["PUJetIDEval"]+':fullId']
+			elemToKeep += ['keep *_'+mod["PUJetIDEval"]+'_*_*']
+			toolsUsed.append( mod["PUJetIDEval"] )
 		else:
-                        print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS. NOT running PUJetID.'
+			print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS. NOT running PUJetID.'
 
 	###### Energy Correlation Functions
 	if addEnergyCorrFunc:
