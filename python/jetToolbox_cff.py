@@ -64,7 +64,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	###############################################################################
 	#######  Verifying some inputs and defining variables
 	###############################################################################
-	if verbosity>=2: print('|---- jetToolbox: Initializing collection...')
+	if verbosity>=1: print('|---- jetToolbox: Initializing collection... (with postfix '+postFix+')')
 	if newPFCollection and verbosity>=2: print('|---- jetToolBox: Using '+ nameNewPFCollection +' as PFCandidates collection')
 	supportedJetAlgos = { 'ak': 'AntiKt', 'ca' : 'CambridgeAachen', 'kt' : 'Kt' }
 	recommendedJetAlgos = [ 'ak4', 'ak8', 'ca4', 'ca8', 'ca10', 'ca15' ]
