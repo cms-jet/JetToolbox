@@ -32,8 +32,11 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		JETCorrPayload='', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
 		Cut = '', 
 		postFix='',
-		bTagDiscriminators = None, 
+		# blank means default list of discriminators, None means none
+		bTagDiscriminators = '',
 		bTagInfos = None, 
+		subjetBTagDiscriminators = '',
+		subjetBTagInfos = None, 
 		subJETCorrPayload='', subJETCorrLevels = [ 'None' ], GetSubjetMCFlavour=True,
 		CutSubjet = '', 
 		addPruning=False, zCut=0.1, rCut=0.5, addPrunedSubjets=False,
@@ -114,25 +117,26 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if runOnData: subJETCorrLevels.append('L2L3Residual')
 
 
+	## b-tag discriminators
+	defaultBTagDiscriminators = [
+			'pfTrackCountingHighEffBJetTags',
+			'pfTrackCountingHighPurBJetTags',
+			'pfJetProbabilityBJetTags',
+			'pfJetBProbabilityBJetTags',
+			'pfSimpleSecondaryVertexHighEffBJetTags',
+			'pfSimpleSecondaryVertexHighPurBJetTags',
+			'pfCombinedSecondaryVertexV2BJetTags',
+			'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+			'pfCombinedMVAV2BJetTags'
+	]
+	if bTagDiscriminators is '': bTagDiscriminators = defaultBTagDiscriminators
+	if subjetBTagDiscriminators is '': subjetBTagDiscriminators = defaultBTagDiscriminators
+
 	mod["PATJetsLabel"] = jetALGO+'PF'+PUMethod
 	mod["PATJetsLabelPost"] = mod["PATJetsLabel"]+postFix
 	# some substructure quantities don't include the 'PF' in the name
 	mod["SubstructureLabel"] = jetALGO+PUMethod+postFix
 	if not updateCollection: 
-
-		## b-tag discriminators
-		if bTagDiscriminators is None:
-			bTagDiscriminators = [
-					'pfTrackCountingHighEffBJetTags',
-					'pfTrackCountingHighPurBJetTags',
-					'pfJetProbabilityBJetTags',
-					'pfJetBProbabilityBJetTags',
-					'pfSimpleSecondaryVertexHighEffBJetTags',
-					'pfSimpleSecondaryVertexHighPurBJetTags',
-					'pfCombinedSecondaryVertexV2BJetTags',
-					'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-					'pfCombinedMVAV2BJetTags'
-			]
 
 		mod["GenJetsNoNu"] = jetalgo+'GenJetsNoNu'
 		#### For MiniAOD
@@ -372,7 +376,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		mod["PATJetsCorrFactors"] = 'patJetCorrFactors'+mod["PATJetsLabelPost"]
 		getattr( proc, mod["PATJetsCorrFactors"] ).payload = JETCorrPayload
 		getattr( proc, mod["PATJetsCorrFactors"] ).levels = JETCorrLevels
-		if bTagDiscriminators and verbosity>=2: print('|---- jetToolBox: Adding these bTagDiscriminators: '+str(bTagDiscriminators)+' in the jet collection.')
 		patJets = 'updatedPatJets'
 		patSubJets = ''
 		mod["PATJets"] = patJets+mod["PATJetsLabelPost"]
@@ -392,18 +395,21 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					fatJets = cms.InputTag( updateCollection ),
 					rParam = jetSize, 
 					algo = jetALGO,
-					btagDiscriminators = bTagDiscriminators,
+					btagDiscriminators = subjetBTagDiscriminators,
 					)
 			mod["PATSubjetsCorrFactors"] = 'patJetCorrFactors'+mod["PATSubjetsLabel"]
 			getattr( proc, mod["PATSubjetsCorrFactors"] ).payload = subJETCorrPayload
 			getattr( proc, mod["PATSubjetsCorrFactors"] ).levels = subJETCorrLevels
 			patSubJets = 'updatedPatJets'+mod["PATSubjetsLabel"]
-			if bTagDiscriminators and verbosity>=2: print('|---- jetToolBox: Adding these bTagDiscriminators: '+str(bTagDiscriminators)+' in the subjet collection.')
 
 		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger or addMassDrop or addHEPTopTagger or addPruning or addSoftDrop: 
 			if verbosity>=1: print('|---- jetToolBox: You are trying to add a groomer variable into a clustered jet collection. THIS IS NOT RECOMMENDED, it is recommended to recluster jets instead using a plain jetToolbox configuration. Please use this feature at your own risk.')
 
 	mod["PFJetsOrUpdate"] = mod["PFJets"] if not updateCollection else updateCollection
+
+	if bTagDiscriminators and verbosity>=2: print('|---- jetToolBox: Adding these btag discriminators: '+str(bTagDiscriminators)+' in the jet collection.')
+	if ( (addPrunedSubjets or addSoftDropSubjets) or (updateCollection and updateCollectionSubjets) ) and subjetBTagDiscriminators and verbosity>=2:
+		print('|---- jetToolBox: Adding these btag discriminators: '+str(subjetBTagDiscriminators)+' in the subjet collection.')
 
 	#### Groomers
 	if addSoftDrop or addSoftDropSubjets: 
@@ -486,7 +492,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					svSource = cms.InputTag( svLabel ),  
 					muSource = cms.InputTag( muLabel ),
 					elSource = cms.InputTag( elLabel ),
-					btagDiscriminators = bTagDiscriminators,
+					btagDiscriminators = subjetBTagDiscriminators,
 					btagInfos = bTagInfos,
 					genJetCollection = cms.InputTag( mod["GenJetsNoNuSoftDrop"],'SubJets'),
 					getJetMCFlavour = GetSubjetMCFlavour,
@@ -607,7 +613,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					elSource = cms.InputTag( elLabel ),
 					getJetMCFlavour = GetSubjetMCFlavour,
 					genParticles = cms.InputTag(genParticlesLabel),
-					btagDiscriminators = bTagDiscriminators,
+					btagDiscriminators = subjetBTagDiscriminators,
 					btagInfos = bTagInfos,
 					genJetCollection = cms.InputTag( mod["GenJetsNoNuPruned"],'SubJets'),
 					explicitJTA = True,  # needed for subjet b tagging
