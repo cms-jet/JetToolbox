@@ -46,7 +46,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addNsub=False, maxTau=4,
 		addNsubSubjets=False, subjetMaxTau=4,
 		addPUJetID=False,
-		addQJets=False,
 		addQGTagger=False, QGjetsLabel='chs',
 		addEnergyCorrFunc=False, 
 		addEnergyCorrFuncSubjets=False,
@@ -905,26 +904,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		for tau in rangeTau: getattr( proc, ( mod["NsubPATSubjets"] if not updateCollectionSubjets else patSubJets ) ).userData.userFloats.src += [mod["Nsubjettiness"]+':tau'+str(tau) ] 
 		jetSeq += getattr(proc, mod["Nsubjettiness"])
 		toolsUsed.append( mod["Nsubjettiness"] )
-
-	###### QJetsAdder
-	'''
-	if addQJets:
-		### there must be a better way to do this random number introduction
-		setattr( proc, 'RandomNumberGeneratorService', cms.Service("RandomNumberGeneratorService", 
-							QJetsAdderCA8 = cms.PSet(initialSeed = cms.untracked.uint32(7)),
-							QJetsAdderAK8 = cms.PSet(initialSeed = cms.untracked.uint32(31)),
-							QJetsAdderCA15 = cms.PSet(initialSeed = cms.untracked.uint32(76)), ) )
-
-		from RecoJets.JetProducers.qjetsadder_cfi import QJetsAdder
-		setattr( proc, 'QJetsAdder'+jetALGO, 
-				QJetsAdder.clone( src = cms.InputTag(jetalgo+'PFJets'+PUMethod+postFix), 
-					jetRad = cms.double( jetSize ), 
-					jetAlgo = cms.string( jetALGO[0:2] )))
-		elemToKeep += [ 'keep *_QJetsAdder'+jetALGO+'_*_*' ]
-		getattr( proc, patJets+jetALGO+'PF'+PUMethod).userData.userFloats.src += ['QJetsAdder'+jetALGO+':QjetsVolatility']  
-		jetSeq += getattr(proc, 'QJetsAdder'+jetALGO )
-		toolsUsed.append( 'QJetsAdder'+jetALGO )
-	'''
 
 	###### QGTagger
 	if addQGTagger:
