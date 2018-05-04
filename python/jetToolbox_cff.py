@@ -83,7 +83,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	jetSize = 0.
 	if int(size) in range(0, 20): jetSize = int(size)/10.
-	else: print '|---- jetToolBox: jetSize has not a valid value. Insert a number between 1 and 20 after algorithm, like: AK8'
+	else: raise ValueError('|---- jetToolBox: jetSize has not a valid value. Insert a number between 1 and 20 after algorithm, like: AK8')
 	### Trick for uppercase/lowercase algo name
 	jetALGO = jetAlgo.upper()+size
 	jetalgo = jetAlgo.lower()+size
@@ -355,9 +355,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		elLabel = 'slimmedElectrons'
 
 		if not JETCorrPayload: 
-			print '|---- jetToolBox: updateCollection option requires to add JETCorrPayload.'
-			print '|---- jetToolBox: EXITING.'
-			return None
+			raise ValueError('|---- jetToolBox: updateCollection option requires to add JETCorrPayload.')
+
 		if 'Puppi' in updateCollection: PUMethod='Puppi'
 		JEC = ( JETCorrPayload, JETCorrLevels, 'None' )   ### temporary
 		print '|---- jetToolBox: Applying these corrections: '+str(JEC)
@@ -803,7 +802,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			elemToKeep += [ 'keep *_'+mod["PATJetsCMSTopTagPacked"]+'_*_*' ]
 			toolsUsed.append( mod["PATJetsCMSTopTagPacked"] )
 
-		else: print '|---- jetToolBox: CMS recommends CambridgeAachen for CMS Top Tagger, you are using '+algorithm+'. JetToolbox will not run CMS Top Tagger.'
+		else:
+			raise ValueError('|---- jetToolBox: CMS recommends CambridgeAachen for CMS Top Tagger, you are using '+algorithm+'. JetToolbox will not run CMS Top Tagger.')
 
 	if addMassDrop :
 
@@ -822,7 +822,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			jetSeq += getattr(proc, mod["PFJetsMassDrop"])
 			jetSeq += getattr(proc, mod["MassDropFilteredMass"])
 			toolsUsed.append( mod["MassDropFilteredMass"] )
-		else: print '|---- jetToolBox: CMS recommends CambridgeAachen for Mass Drop, you are using '+algorithm+'. JetToolbox will not run Mass Drop.'
+		else:
+			raise ValueError('|---- jetToolBox: CMS recommends CambridgeAachen for Mass Drop, you are using '+algorithm+'. JetToolbox will not run Mass Drop.')
 
 	if addHEPTopTagger: 
 		if ( jetSize >= 1. ) and ( 'CA' in jetALGO ): 
@@ -837,7 +838,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			jetSeq += getattr(proc, mod["PFJetsHEPTopTag"])
 			jetSeq += getattr(proc, mod["PFJetsHEPTopTagMass"])
 			toolsUsed.append( mod["PFJetsHEPTopTagMass"] )
-		else: print '|---- jetToolBox: CMS recommends CambridgeAachen for HEPTopTagger, you are using '+algorithm+', and a jet cone size bigger than 1. JetToolbox will not run HEP TopTagger.'
+		else:
+			raise ValueError('|---- jetToolBox: CMS recommends CambridgeAachen w/ jet cone size > 1.0 for HEPTopTagger, you are using '+algorithm+'. JetToolbox will not run HEP TopTagger.')
 
 	####### Nsubjettiness
 	if addNsub:
@@ -882,8 +884,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			mod["NsubSubjets"] = mod["PATSubjetsPrunedLabel"]
 			mod["NsubPATSubjets"] = mod["PATSubjetsPruned"]
 		else: 
-			print '|---- jetToolBox: Nsubjettiness of subjets needs a Subjet collection. Or create one using addSoftDropSubjets option, or updateCollection.'
-			return None
+			raise ValueError('|---- jetToolBox: Nsubjettiness of subjets needs a Subjet collection. Or create one using addSoftDropSubjets option, or updateCollection.')
 
 		mod["Nsubjettiness"] = 'Nsubjettiness'+mod["NsubSubjets"]
 		rangeTau = range(1,subjetMaxTau+1)
@@ -923,7 +924,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			toolsUsed.append( mod["QGTagger"] )
 		else:
-			print '|---- jetToolBox: QGTagger is optimized for ak4 jets with CHS. NOT running QGTagger'
+			raise ValueError('|---- jetToolBox: QGTagger is optimized for ak4 jets with CHS. NOT running QGTagger')
 
 			
 	####### Pileup JetID
@@ -957,12 +958,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			elemToKeep += ['keep *_'+mod["PUJetIDEval"]+'_*_*']
 			toolsUsed.append( mod["PUJetIDEval"] )
 		else:
-			print '|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS. NOT running PUJetID.'
+			raise ValueError('|---- jetToolBox: PUJetID is optimized for ak4 PFjets with CHS. NOT running PUJetID.')
 
 	###### Energy Correlation Functions
 	if addEnergyCorrFunc:
 		if PUMethod!="Puppi" or (addSoftDrop==False and addSoftDropSubjets==False):
-			raise ValueError("addEnergyCorrFunc only supported for Puppi w/ addSoftDrop or addSoftDropSubjets")
+			raise ValueError("|---- jetToolBox: addEnergyCorrFunc only supported for Puppi w/ addSoftDrop or addSoftDropSubjets")
 		from RecoJets.JetProducers.ECF_cff import ecfNbeta1, ecfNbeta2
 		mod["ECFnb1"] = 'nb1'+mod["SubstructureLabel"]+'SoftDrop'
 		mod["ECFnb2"] = 'nb2'+mod["SubstructureLabel"]+'SoftDrop'
@@ -1011,7 +1012,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	if addEnergyCorrFuncSubjets:
 		if PUMethod!="Puppi" or addSoftDropSubjets==False:
-			raise ValueError("addEnergyCorrFuncSubjets only supported for Puppi w/ addSoftDropSubjets")
+			raise ValueError("|---- jetToolBox: addEnergyCorrFuncSubjets only supported for Puppi w/ addSoftDropSubjets")
 		from RecoJets.JetProducers.ECF_cff import ecfNbeta1, ecfNbeta2
 		mod["ECFnb1Subjets"] = 'nb1'+mod["SubstructureLabel"]+'SoftDropSubjets'
 		mod["ECFnb2Subjets"] = 'nb2'+mod["SubstructureLabel"]+'SoftDropSubjets'
