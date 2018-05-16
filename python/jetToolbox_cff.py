@@ -135,6 +135,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if bTagDiscriminators is '': bTagDiscriminators = defaultBTagDiscriminators
 	if subjetBTagDiscriminators is '': subjetBTagDiscriminators = defaultBTagDiscriminators
 
+	if updateCollection and 'Puppi' in updateCollection: PUMethod='Puppi'
 	mod["PATJetsLabel"] = jetALGO+'PF'+PUMethod
 	mod["PATJetsLabelPost"] = mod["PATJetsLabel"]+postFix
 	# some substructure quantities don't include the 'PF' in the name
@@ -365,7 +366,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if not JETCorrPayload: 
 			raise ValueError('|---- jetToolBox: updateCollection option requires to add JETCorrPayload.')
 
-		if 'Puppi' in updateCollection: PUMethod='Puppi'
 		JEC = ( JETCorrPayload, JETCorrLevels, 'None' )   ### temporary
 		if verbosity>=2: print('|---- jetToolBox: Applying these corrections: '+str(JEC))
 		updateJetCollection(
@@ -381,6 +381,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		getattr( proc, mod["PATJetsCorrFactors"] ).levels = JETCorrLevels
 		patJets = 'updatedPatJets'
 		patSubJets = ''
+		selPatJets = 'selectedPatJets'
 		mod["PATJets"] = patJets+mod["PATJetsLabelPost"]
 		mod["selPATJets"] = selPatJets+mod["PATJetsLabelPost"]
 
@@ -1043,7 +1044,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
-	mod["selPATJets"] = selPatJets+mod["PATJetsLabelPost"]
 	setattr( proc, mod["selPATJets"], selectedPatJets.clone( src = mod["PATJets"], cut = Cut ) )
 	elemToKeep += [ 'keep *_'+mod["selPATJets"]+'_*_*' ]
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_calo*_*' ]
