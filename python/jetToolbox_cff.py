@@ -445,8 +445,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		if addSoftDropSubjets:
 
+			mod["GenJetsNoNuSoftDrop"] = mod["GenJetsNoNu"]+'SoftDrop'
 			if runOnMC:
-				mod["GenJetsNoNuSoftDrop"] = mod["GenJetsNoNu"]+'SoftDrop'
 				setattr( proc, mod["GenJetsNoNuSoftDrop"],
 						ak4GenJets.clone(
 							SubJetParameters,
