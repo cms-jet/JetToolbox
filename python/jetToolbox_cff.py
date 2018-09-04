@@ -1,4 +1,4 @@
-###############################################
+saveJetCollection###############################################
 ####
 ####   Jet Substructure Toolbox (jetToolBox)
 ####   Python function for easy access of
@@ -52,9 +52,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addQGTagger=False, QGjetsLabel='chs',
 		addEnergyCorrFunc=False, ecfType = "N", ecfBeta = 1.0, ecfN3 = False,
 		addEnergyCorrFuncSubjets=False, ecfSubjetType = "N", ecfSubjetBeta = 1.0, ecfSubjetN3 = False,
-		# set this to false to disable creation of jettoolbox.root
-		# then you need to associate the jetTask to a Path or EndPath manually in your config
-		associateTask=True,
+		# set this to true to enable creation of edm root file
+		saveJetCollection=False,
 		# 0 = no printouts, 1 = warnings only, 2 = warnings & info, 3 = warnings, info, debug
 		verbosity=2,
 		):
@@ -1071,11 +1070,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		getattr( proc, 'jetTask', cms.Task() ).add(*[getattr(proc,prod) for prod in proc.producers_()])
 		getattr( proc, 'jetTask', cms.Task() ).add(*[getattr(proc,filt) for filt in proc.filters_()])
 
-	if associateTask:
-		if hasattr(proc, 'endpath'):
-			getattr( proc, 'endpath').associate( getattr( proc, 'jetTask', cms.Task() ) )
-		else:
-			setattr( proc, 'endpath', cms.EndPath(getattr(proc, outputFile), getattr( proc, 'jetTask', cms.Task() )) )
+	setattr( proc, 'jetPath', cms.Path( getattr( proc, mod["selPATJets"] ) ) )
+	getattr( proc, 'jetPath').associate( getattr( proc, 'jetTask' ) )
+
+	if saveJetCollection:
+	 	if hasattr(proc, 'endpath'):
+	 		getattr( proc, 'endpath').associate( getattr( proc, 'jetTask', cms.Task() ) )
+	 	else:
+	 		setattr( proc, 'endpath', cms.EndPath(getattr(proc, outputFile), getattr( proc, 'jetTask', cms.Task() )) )
 
 	#### removing mc matching for data
 	if runOnData:
