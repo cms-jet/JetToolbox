@@ -29,9 +29,9 @@ events = Events ('jettoolbox.root')
 PUMethod = 'CHS'
 
 handle = Handle("std::vector<pat::Jet>")
-label = ("selectedPatJetsAK8PF"+PUMethod) 
+#label = ("selectedPatJetsAK8PF"+PUMethod) 
 #label = ('packedPatJetsAK8PFCHSSoftDrop') 
-#label = ('packedPatJetsAK8PFCHSPruned') 
+label = ('packedPatJetsAK4PFPuppiSoftDrop') 
 
 
 # loop over events in this file
@@ -48,7 +48,8 @@ for event in events:
 	#subjets = handleSubjets.product()
 
 	for i,j in enumerate(jets):
-		print "jetAK8 %3d: pt %5.1f (raw pt %5.1f), eta %+4.2f, mass %5.1f ungroomed, %5.1f softdrop, %5.1f pruned, %5.1f trimmed, %5.1f filtered. " % ( i, j.pt(), j.pt()*j.jecFactor('Uncorrected'), j.eta(), j.mass(), j.userFloat('ak8PFJetsCHSSoftDropMass'), j.userFloat('ak8PFJetsCHSPrunedMass'), j.userFloat('ak8PFJetsCHSTrimmedMass'), j.userFloat('ak8PFJetsCHSFilteredMass'))
+		#print "jetAK8 %3d: pt %5.1f (raw pt %5.1f), eta %+4.2f, mass %5.1f ungroomed, %5.1f softdrop, %5.1f pruned, %5.1f trimmed, %5.1f filtered. " % ( i, j.pt(), j.pt()*j.jecFactor('Uncorrected'), j.eta(), j.mass(), j.userFloat('ak8PFJetsCHSSoftDropMass'), j.userFloat('ak8PFJetsCHSPrunedMass'), j.userFloat('ak8PFJetsCHSTrimmedMass'), j.userFloat('ak8PFJetsCHSFilteredMass'), j.userFloat('nb2AK4PuppiSoftDrop:ecfN2'))
+		print  i, j.pt(), j.pt()*j.jecFactor('Uncorrected'), j.eta(), j.mass(), j.userFloat('ak4PFJetsPuppiSoftDropValueMap:nb1AK4PuppiSoftDropN2'), j.userFloat('ak4PFJetsPuppiSoftDropValueMap:nb1AK4PuppiSoftDropN3')
 			          
 		'''
 	i = 0

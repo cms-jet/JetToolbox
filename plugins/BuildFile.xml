@@ -1,0 +1,15 @@
+<flags   EDM_PLUGIN="1"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<use   name="root"/>
+<use   name="boost"/>
+<use   name="DataFormats/Candidate"/>
+<use   name="DataFormats/JetReco"/>
+<use   name="DataFormats/PatCandidates"/>
+<use   name="DataFormats/StdDictionaries"/>
+<use   name="DataFormats/WrappedStdDictionaries"/>
+<use   name="SimDataFormats/GeneratorProducts"/>
+<use   name="FWCore/ServiceRegistry"/>
+<use   name="CommonTools/Utils"/>
+<use   name="CommonTools/UtilAlgos"/>
+<use   name="CondFormats/JetMETObjects"/>
