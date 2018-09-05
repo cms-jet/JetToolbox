@@ -1,4 +1,4 @@
-saveJetCollection###############################################
+###############################################
 ####
 ####   Jet Substructure Toolbox (jetToolBox)
 ####   Python function for easy access of
@@ -1027,7 +1027,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 							))
 		elemToKeep += [ 'keep *_'+mod["ECF"+ecfSubjetVar]+'_*_*' ]
 		jetSeq += getattr(proc, mod["ECF"+ecfSubjetVar])
-		toolsUsed.extend([mod["ECFnb"+ecfSubjetVar]])
+		toolsUsed.extend([mod["ECF"+ecfSubjetVar]])
 
 		# set up user floats
 		getattr(proc, mod["PATSubjetsSoftDrop"]).userData.userFloats.src += [
