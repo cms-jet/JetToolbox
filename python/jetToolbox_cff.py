@@ -141,6 +141,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	defaultBoostedBTagDiscriminators = [ 'pfBoostedDoubleSecondaryVertexAK8BJetTags', ]
 	if updateCollection: 	## only possible to update
 		defaultBoostedBTagDiscriminators += [
+                        'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
+                        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+                        'pfMassIndependentDeepDoubleCvLJetTags:probQCD',
+                        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
+                        'pfMassIndependentDeepDoubleCvBJetTags:probHbb',
+                        'pfMassIndependentDeepDoubleCvBJetTags:probHcc',
 			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight",
 			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight",
 			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD",
