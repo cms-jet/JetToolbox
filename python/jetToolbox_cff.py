@@ -11,7 +11,7 @@
 import FWCore.ParameterSet.Config as cms
 
 from RecoJets.Configuration.RecoPFJets_cff import ak4PFJets, ak8PFJetsCHSSoftDrop, ak8PFJetsCHSSoftDropMass, ak8PFJetsCHSPruned, ak8PFJetsCHSPrunedMass, ak8PFJetsCHSTrimmed, ak8PFJetsCHSTrimmedMass, ak8PFJetsCHSFiltered, ak8PFJetsCHSFilteredMass, ak4PFJetsCHS, ca15PFJetsCHSMassDropFiltered, ak8PFJetsCHSConstituents, puppi
-from RecoJets.JetProducers.caTopTaggers_cff import hepTopTagPFJetsCHS
+from RecoJets.JetProducers.hepTopTaggerV2_cff import hepTopTaggerV2
 from RecoJets.Configuration.RecoGenJets_cff import ak4GenJets
 from RecoJets.JetProducers.SubJetParameters_cfi import SubJetParameters
 from RecoJets.JetProducers.PFJetParameters_cfi import *
@@ -20,7 +20,7 @@ from RecoJets.JetProducers.AnomalousCellParameters_cfi import *
 from RecoJets.JetProducers.CATopJetParameters_cfi import *
 from PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff import *
 from PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi import selectedPatJets
-from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection, updateJetCollection
+from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection, updateJetCollection, switchJetCollection
 from collections import OrderedDict
 
 def jetToolbox( proc, jetType, jetSequence, outputFile,
@@ -78,7 +78,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	supportedJetAlgos = { 'ak': 'AntiKt', 'ca' : 'CambridgeAachen', 'kt' : 'Kt' }
 	recommendedJetAlgos = [ 'ak4', 'ak8', 'ca4', 'ca8', 'ca10', 'ca15' ]
 	payloadList = [ 'None',
-			'AK4PFchs', 'AK8PFchs', 
+			'AK4PFchs', 'AK8PFchs',
 			'AK4PFPuppi', 'AK8PFPuppi',
 			'AK4PF', 'AK8PF' ]
 	jetAlgo = ''
@@ -116,19 +116,20 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	#################################################################################
 	####### Setting b-tag discriminators
-	## adding the default taggers for 94X 
+	## adding the default taggers for 94X
 	## https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
 	defaultBTagDiscriminators = [
 			'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+			'pfCombinedCvsLJetTags',
+			'pfCombinedCvsBJetTags',
+	]
+	if updateCollection and (jetALGO=='AK4'):
+	#if (PUMethod=='CHS'):
+		defaultBTagDiscriminators += [
 			'pfDeepCSVJetTags:probb',
 			'pfDeepCSVJetTags:probbb',
 			'pfDeepCSVJetTags:probc',
 			'pfDeepCSVJetTags:probudsg',
-			'pfCombinedCvsLJetTags',
-			'pfCombinedCvsBJetTags',
-	]
-	if updateCollection: 	## only possible to update 
-		defaultBTagDiscriminators = [
 			'pfDeepFlavourJetTags:probb',
 			'pfDeepFlavourJetTags:probbb',
 			'pfDeepFlavourJetTags:problepb',
@@ -136,9 +137,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			'pfDeepFlavourJetTags:probuds',
 			'pfDeepFlavourJetTags:probg',
 		]
-	
+
 	defaultBoostedBTagDiscriminators = [ 'pfBoostedDoubleSecondaryVertexAK8BJetTags', ]
-	if updateCollection: 	## only possible to update 
+	if updateCollection: 	## only possible to update
 		defaultBoostedBTagDiscriminators += [
 			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight",
 			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight",
@@ -148,14 +149,17 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD"
 		]
 
-	if bTagDiscriminators is '': 
+	if bTagDiscriminators is '':
 		if jetSize == 0.4: bTagDiscriminators = defaultBTagDiscriminators
 		elif jetSize == 0.8: bTagDiscriminators = defaultBoostedBTagDiscriminators
-		else: print('|---- jetToolBox: btag discriminators are recommended for AK4 and AK8 jets. For a different cone size, please especify the discriminators. Turning ALL the btag discriminators off.')
-		if bTagDiscriminators and verbosity>=2: print('|---- jetToolBox: Adding these btag discriminators: '+str(bTagDiscriminators)+' in the jet collection.')
-	if subjetBTagDiscriminators is '': 
+		else:
+                    bTagDiscriminators = None
+                    print('|---- jetToolBox: btag discriminators are recommended for AK4 and AK8 jets. For a different cone size, please especify the discriminators. Turning OFF all the default btag discriminators.')
+	if subjetBTagDiscriminators is '':
 		subjetBTagDiscriminators = defaultBTagDiscriminators
 		if ( (addPrunedSubjets or addSoftDropSubjets) or (updateCollection and updateCollectionSubjets) ) and subjetBTagDiscriminators and verbosity>=2: print('|---- jetToolBox: Adding these btag discriminators: '+str(subjetBTagDiscriminators)+' in the subjet collection.')
+	if (bTagDiscriminators is not None) and verbosity>=2: print('|---- jetToolBox: Adding these btag discriminators: '+str(bTagDiscriminators)+' in the jet collection.')
+        if (bTagDiscriminators is not None) and any( 'Deep' in i for i in bTagDiscriminators ) and not (jetALGO=='AK4' and PUMethod=='CHS'): print('|---- jetToolBox: DeepCSV and DeepFlavour btag discriminators were trained for AK4 CHS jets. You are trying to use it in other configuration. Use it at your own risk.')
 	#################################################################################
 
 
@@ -171,8 +175,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if not updateCollection:
 
 		mod["GenJetsNoNu"] = jetalgo+'GenJetsNoNu'
-	
-		####### Setting labels and running GenJets 
+
+		####### Setting labels and running GenJets
 		if miniAOD:
 
 			if verbosity>=2: print('|---- jetToolBox: JETTOOLBOX RUNNING ON MiniAOD FOR '+jetALGO+' JETS USING '+PUMethod)
@@ -204,7 +208,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			#for Inclusive Vertex Finder
 			proc.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
 
-		
+
 		else: 	#### For AOD
 			if verbosity>=2: print('|---- jetToolBox: JETTOOLBOX RUNNING ON AOD FOR '+jetALGO+' JETS USING '+PUMethod)
 
@@ -341,12 +345,18 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		##### In case PUMEthod is SK or CS, rename payload to CHS
 		if 'None' in JETCorrPayload: JEC = None
-		else: JEC = ( JETCorrPayload.replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )
+		else:
+                    if JETCorrPayload not in payloadList:
+                        print('|---- jetToolBox: JEC '+JETCorrPayload+' corrections not centrally supported (AK4PFchs,AK4PFPuppi,AK8PFchs,AK8PFPuppi). jetToolBox will assigned the closest JECs.')
+                        tmpJetPayload = JETCorrPayload.split('PF')[1]
+                        if (int(size) >= 8): JETCorrPayload = 'AK8PF'+tmpJetPayload
+                        else: JETCorrPayload = 'AK4PF'+tmpJetPayload
+                    JEC = ( JETCorrPayload.replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )
 		if verbosity>=2: print('|---- jetToolBox: Applying these corrections: '+str(JEC))
 
 		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger:
 			if 'None' in subJETCorrPayload: subJEC = None
-			else: subJEC = ( subJETCorrPayload.replace('CS','chs').replace('SK','chs') , subJETCorrLevels, 'None' ) 
+			else: subJEC = ( subJETCorrPayload.replace('CS','chs').replace('SK','chs') , subJETCorrLevels, 'None' )
 		#########################################################################
 
 
@@ -391,7 +401,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	####### update jets from existing collection
 	else:
 		if verbosity>=2: print('|---- jetToolBox: JETTOOLBOX IS UPDATING '+updateCollection+' collection')
-		####### Setting labels 
+		####### Setting labels
 		genParticlesLabel = 'prunedGenParticles'
 		pvLabel = 'offlineSlimmedPrimaryVertices'
 		svLabel = 'slimmedSecondaryVertices'
@@ -402,7 +412,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if not JETCorrPayload:
 			raise ValueError('|---- jetToolBox: updateCollection option requires to add JETCorrPayload.')
 
-		JEC = ( JETCorrPayload, JETCorrLevels, 'None' ) 
+		JEC = ( JETCorrPayload, JETCorrLevels, 'None' )
 		if verbosity>=2: print('|---- jetToolBox: Applying these corrections: '+str(JEC))
 		#########################################################################
 
@@ -487,8 +497,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		elemToKeep += [ 'keep *_'+mod["SoftDropMass"]+'_*_*']
 		jetSeq += getattr(proc, mod["PFJetsSoftDrop"] )
 		jetSeq += getattr(proc, mod["SoftDropMass"] )
-		
-		#### Adding softdrop mass as userFloat 
+
+		#### Adding softdrop mass as userFloat
 		getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["SoftDropMass"] ]
 		toolsUsed.append( mod["SoftDropMass"] )
 		#########################################################################
@@ -625,7 +635,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		jetSeq += getattr(proc, mod["PFJetsPruned"])
 		jetSeq += getattr(proc, mod["PrunedMass"])
 
-		#### Adding softdrop mass as userFloat 
+		#### Adding softdrop mass as userFloat
 		getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["PrunedMass"] ]
 		elemToKeep += [ 'keep *_'+mod["PrunedMass"]+'_*_*']
 		toolsUsed.append( mod["PrunedMass"] )
@@ -784,116 +794,116 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	#################################################################################
 	####### Adding CMSTopTagger
-	if addCMSTopTagger :
-
-		if 'CA' in jetALGO :
-
-			mod["PFJetsCMSTopTag"] = mod["PFJets"].replace(jetalgo,"cmsTopTag")
-			setattr( proc, mod["PFJetsCMSTopTag"],
-					cms.EDProducer("CATopJetProducer",
-						PFJetParameters.clone(
-							src = cms.InputTag( mod["PFJetsConstituentsColonOrUpdate"] ),
-							doAreaFastjet = cms.bool(True),
-							doRhoFastjet = cms.bool(False),
-							jetPtMin = cms.double(100.0)
-							),
-						AnomalousCellParameters,
-						CATopJetParameters.clone( jetCollInstanceName = cms.string("SubJets"),
-							verbose = cms.bool(False),
-							algorithm = cms.int32(1), # 0 = KT, 1 = CA, 2 = anti-KT
-							tagAlgo = cms.int32(0), #0=legacy top
-							useAdjacency = cms.int32(2), # modified adjacency
-							centralEtaCut = cms.double(2.5), # eta for defining "central" jets
-							sumEtBins = cms.vdouble(0,1600,2600), # sumEt bins over which cuts vary. vector={bin 0 lower bound, bin 1 lower bound, ...}
-							rBins = cms.vdouble(0.8,0.8,0.8), # Jet distance paramter R. R values depend on sumEt bins.
-							ptFracBins = cms.vdouble(0.05,0.05,0.05), # minimum fraction of central jet pt for subjets (deltap)
-							deltarBins = cms.vdouble(0.19,0.19,0.19), # Applicable only if useAdjacency=1. deltar adjacency values for each sumEtBin
-							nCellBins = cms.vdouble(1.9,1.9,1.9),
-							),
-						jetAlgorithm = cms.string("CambridgeAachen"),
-						rParam = cms.double(jetSize),
-						writeCompound = cms.bool(True)
-						)
-					)
-
-			mod["CATopTagInfos"] = "CATopTagInfos"+postFix
-			setattr( proc, mod["CATopTagInfos"],
-					cms.EDProducer("CATopJetTagger",
-						src = cms.InputTag(mod["PFJetsCMSTopTag"]),
-						TopMass = cms.double(171),
-						TopMassMin = cms.double(0.),
-						TopMassMax = cms.double(250.),
-						WMass = cms.double(80.4),
-						WMassMin = cms.double(0.0),
-						WMassMax = cms.double(200.0),
-						MinMassMin = cms.double(0.0),
-						MinMassMax = cms.double(200.0),
-						verbose = cms.bool(False)
-						)
-					)
-			mod["PATJetsCMSTopTagLabel"] = 'CMSTopTag'+PUMethod+postFix
-			addJetCollection(
-					proc,
-					labelName = mod["PATJetsCMSTopTagLabel"],
-					jetSource = cms.InputTag(mod["PFJetsCMSTopTag"]),
-					jetCorrections = JEC if JEC is not None else None,
-					pfCandidates = cms.InputTag( pfCand ),
-					pvSource = cms.InputTag( pvLabel),
-					svSource = cms.InputTag( svLabel ),
-					muSource = cms.InputTag( muLabel ),
-					elSource = cms.InputTag( elLabel ),
-					btagDiscriminators = bTagDiscriminators,
-					btagInfos = bTagInfos,
-					genJetCollection = cms.InputTag(mod["GenJetsNoNu"]),
-					getJetMCFlavour = False, # jet flavor should always be disabled for groomed jets
-					genParticles = cms.InputTag(genParticlesLabel)
-					)
-			mod["PATJetsCMSTopTag"] = patJets+mod["PATJetsCMSTopTagLabel"]
-			mod["selPATJetsCMSTopTag"] = selPatJets+mod["PATJetsCMSTopTagLabel"]
-			getattr(proc,mod["PATJetsCMSTopTag"]).addTagInfos = True
-			getattr(proc,mod["PATJetsCMSTopTag"]).tagInfoSources = cms.VInputTag( cms.InputTag(mod["CATopTagInfos"]))
-			setattr( proc, mod["selPATJetsCMSTopTag"], selectedPatJets.clone( src = mod["PATJetsCMSTopTag"], cut = Cut ) )
-
-			mod["PATSubjetsCMSTopTagLabel"] = mod["PATJetsCMSTopTagLabel"]+'Subjets'
-			addJetCollection(
-					proc,
-					labelName = mod["PATSubjetsCMSTopTagLabel"],
-					jetSource = cms.InputTag(mod["PFJetsCMSTopTag"], 'SubJets'),
-					algo = jetalgo,  # needed for subjet b tagging
-					rParam = jetSize,  # needed for subjet b tagging
-					jetCorrections = subJEC if subJEC is not None else None,
-					pfCandidates = cms.InputTag( pfCand ),
-					pvSource = cms.InputTag( pvLabel),
-					svSource = cms.InputTag( svLabel ),
-					muSource = cms.InputTag( muLabel ),
-					elSource = cms.InputTag( elLabel ),
-					btagDiscriminators = bTagDiscriminators,
-					btagInfos = bTagInfos,
-					genJetCollection = cms.InputTag( mod["GenJetsNoNu"]),
-					getJetMCFlavour = GetSubjetMCFlavour,
-					explicitJTA = True,  # needed for subjet b tagging
-					svClustering = True, # needed for subjet b tagging
-					fatJets=cms.InputTag(mod["PFJets"]),             # needed for subjet flavor clustering
-					groomedFatJets=cms.InputTag(mod["PATJetsCMSTopTag"]), # needed for subjet flavor clustering
-					genParticles = cms.InputTag(genParticlesLabel)
-					)
-			mod["PATSubjetsCMSTopTag"] = patJets+mod["PATSubjetsCMSTopTagLabel"]
-			mod["selPATSubjetsCMSTopTag"] = selPatJets+mod["PATSubjetsCMSTopTagLabel"]
-
-			setattr( proc, mod["selPATSubjetsCMSTopTag"], selectedPatJets.clone( src = mod["PATSubjetsCMSTopTag"], cut = Cut ) )
-
-			mod["PATJetsCMSTopTagPacked"] = mod["PATJetsCMSTopTag"]+'Packed'
-			setattr( proc, mod["PATJetsCMSTopTagPacked"],
-					cms.EDProducer("BoostedJetMerger",
-						jetSrc=cms.InputTag(mod["PATJetsCMSTopTag"]),
-						subjetSrc=cms.InputTag(mod["PATSubjetsCMSTopTag"])
-						))
-			jetSeq += getattr(proc, mod["PATJetsCMSTopTagPacked"])
-			elemToKeep += [ 'keep *_'+mod["PATJetsCMSTopTagPacked"]+'_*_*' ]
-			toolsUsed.append( mod["PATJetsCMSTopTagPacked"] )
-
-		else:
-			raise ValueError('|---- jetToolBox: CMS recommends CambridgeAachen for CMS Top Tagger, you are using '+algorithm+'. JetToolbox will not run CMS Top Tagger.')
+#	if addCMSTopTagger :
+#
+#		if 'CA' in jetALGO :
+#
+#			mod["PFJetsCMSTopTag"] = mod["PFJets"].replace(jetalgo,"cmsTopTag")
+#			setattr( proc, mod["PFJetsCMSTopTag"],
+#					cms.EDProducer("CATopJetProducer",
+#						PFJetParameters.clone(
+#							src = cms.InputTag( mod["PFJetsConstituentsColonOrUpdate"] ),
+#							doAreaFastjet = cms.bool(True),
+#							doRhoFastjet = cms.bool(False),
+#							jetPtMin = cms.double(100.0)
+#							),
+#						AnomalousCellParameters,
+#						CATopJetParameters.clone( jetCollInstanceName = cms.string("SubJets"),
+#							verbose = cms.bool(False),
+#							algorithm = cms.int32(1), # 0 = KT, 1 = CA, 2 = anti-KT
+#							tagAlgo = cms.int32(0), #0=legacy top
+#							useAdjacency = cms.int32(2), # modified adjacency
+#							centralEtaCut = cms.double(2.5), # eta for defining "central" jets
+#							sumEtBins = cms.vdouble(0,1600,2600), # sumEt bins over which cuts vary. vector={bin 0 lower bound, bin 1 lower bound, ...}
+#							rBins = cms.vdouble(0.8,0.8,0.8), # Jet distance paramter R. R values depend on sumEt bins.
+#							ptFracBins = cms.vdouble(0.05,0.05,0.05), # minimum fraction of central jet pt for subjets (deltap)
+#							deltarBins = cms.vdouble(0.19,0.19,0.19), # Applicable only if useAdjacency=1. deltar adjacency values for each sumEtBin
+#							nCellBins = cms.vdouble(1.9,1.9,1.9),
+#							),
+#						jetAlgorithm = cms.string("CambridgeAachen"),
+#						rParam = cms.double(jetSize),
+#						writeCompound = cms.bool(True)
+#						)
+#					)
+#
+#			mod["CATopTagInfos"] = "CATopTagInfos"+postFix
+#			setattr( proc, mod["CATopTagInfos"],
+#					cms.EDProducer("CATopJetTagger",
+#						src = cms.InputTag(mod["PFJetsCMSTopTag"]),
+#						TopMass = cms.double(171),
+#						TopMassMin = cms.double(0.),
+#						TopMassMax = cms.double(250.),
+#						WMass = cms.double(80.4),
+#						WMassMin = cms.double(0.0),
+#						WMassMax = cms.double(200.0),
+#						MinMassMin = cms.double(0.0),
+#						MinMassMax = cms.double(200.0),
+#						verbose = cms.bool(False)
+#						)
+#					)
+#			mod["PATJetsCMSTopTagLabel"] = 'CMSTopTag'+PUMethod+postFix
+#			addJetCollection(
+#					proc,
+#					labelName = mod["PATJetsCMSTopTagLabel"],
+#					jetSource = cms.InputTag(mod["PFJetsCMSTopTag"]),
+#					jetCorrections = JEC if JEC is not None else None,
+#					pfCandidates = cms.InputTag( pfCand ),
+#					pvSource = cms.InputTag( pvLabel),
+#					svSource = cms.InputTag( svLabel ),
+#					muSource = cms.InputTag( muLabel ),
+#					elSource = cms.InputTag( elLabel ),
+#					btagDiscriminators = bTagDiscriminators,
+#					btagInfos = bTagInfos,
+#					genJetCollection = cms.InputTag(mod["GenJetsNoNu"]),
+#					getJetMCFlavour = False, # jet flavor should always be disabled for groomed jets
+#					genParticles = cms.InputTag(genParticlesLabel)
+#					)
+#			mod["PATJetsCMSTopTag"] = patJets+mod["PATJetsCMSTopTagLabel"]
+#			mod["selPATJetsCMSTopTag"] = selPatJets+mod["PATJetsCMSTopTagLabel"]
+#			getattr(proc,mod["PATJetsCMSTopTag"]).addTagInfos = True
+#			getattr(proc,mod["PATJetsCMSTopTag"]).tagInfoSources = cms.VInputTag( cms.InputTag(mod["CATopTagInfos"]))
+#			setattr( proc, mod["selPATJetsCMSTopTag"], selectedPatJets.clone( src = mod["PATJetsCMSTopTag"], cut = Cut ) )
+#
+#			mod["PATSubjetsCMSTopTagLabel"] = mod["PATJetsCMSTopTagLabel"]+'Subjets'
+#			addJetCollection(
+#					proc,
+#					labelName = mod["PATSubjetsCMSTopTagLabel"],
+#					jetSource = cms.InputTag(mod["PFJetsCMSTopTag"], 'SubJets'),
+#					algo = jetalgo,  # needed for subjet b tagging
+#					rParam = jetSize,  # needed for subjet b tagging
+#					jetCorrections = subJEC if subJEC is not None else None,
+#					pfCandidates = cms.InputTag( pfCand ),
+#					pvSource = cms.InputTag( pvLabel),
+#					svSource = cms.InputTag( svLabel ),
+#					muSource = cms.InputTag( muLabel ),
+#					elSource = cms.InputTag( elLabel ),
+#					btagDiscriminators = bTagDiscriminators,
+#					btagInfos = bTagInfos,
+#					genJetCollection = cms.InputTag( mod["GenJetsNoNu"]),
+#					getJetMCFlavour = GetSubjetMCFlavour,
+#					explicitJTA = True,  # needed for subjet b tagging
+#					svClustering = True, # needed for subjet b tagging
+#					fatJets=cms.InputTag(mod["PFJets"]),             # needed for subjet flavor clustering
+#					groomedFatJets=cms.InputTag(mod["PATJetsCMSTopTag"]), # needed for subjet flavor clustering
+#					genParticles = cms.InputTag(genParticlesLabel)
+#					)
+#			mod["PATSubjetsCMSTopTag"] = patJets+mod["PATSubjetsCMSTopTagLabel"]
+#			mod["selPATSubjetsCMSTopTag"] = selPatJets+mod["PATSubjetsCMSTopTagLabel"]
+#
+#			setattr( proc, mod["selPATSubjetsCMSTopTag"], selectedPatJets.clone( src = mod["PATSubjetsCMSTopTag"], cut = Cut ) )
+#
+#			mod["PATJetsCMSTopTagPacked"] = mod["PATJetsCMSTopTag"]+'Packed'
+#			setattr( proc, mod["PATJetsCMSTopTagPacked"],
+#					cms.EDProducer("BoostedJetMerger",
+#						jetSrc=cms.InputTag(mod["PATJetsCMSTopTag"]),
+#						subjetSrc=cms.InputTag(mod["PATSubjetsCMSTopTag"])
+#						))
+#			jetSeq += getattr(proc, mod["PATJetsCMSTopTagPacked"])
+#			elemToKeep += [ 'keep *_'+mod["PATJetsCMSTopTagPacked"]+'_*_*' ]
+#			toolsUsed.append( mod["PATJetsCMSTopTagPacked"] )
+#
+#		else:
+#			raise ValueError('|---- jetToolBox: CMS recommends CambridgeAachen for CMS Top Tagger, you are using '+algorithm+'. JetToolbox will not run CMS Top Tagger.')
 	#################################################################################
 
 
@@ -924,20 +934,35 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	#################################################################################
 	####### Adding HEPTopTagger
 	if addHEPTopTagger:
-		if ( jetSize >= 1. ) and ( 'CA' in jetALGO ):
+		if ( int(size) != 1.5 ) and ( 'CA' in jetALGO ): print('|---- jetToolBox: HEPTtopTagger is recommented for CA15 jets. JTB will run the algorithm but use it on your own risk.')
+                print('|---- jetToolBox: When running HEPTopTagger one will have several warnings about using an old version of Nsubjetiness. This is expected.')
 
-			mod["PFJetsHEPTopTag"] = mod["PFJets"].replace(jetalgo,"hepTopTag")
-			mod["PFJetsHEPTopTagMass"] = mod["PFJetsHEPTopTag"]+'Mass'+jetALGO
-			setattr( proc, mod["PFJetsHEPTopTag"], hepTopTagPFJetsCHS.clone( src = cms.InputTag( mod["PFJetsConstituentsColonOrUpdate"] ) ) )
-			setattr( proc, mod["PFJetsHEPTopTagMass"], ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag(mod["PFJets"]),
+		mod["PFJetsHEPTopTag"] = mod["PFJets"].replace(jetalgo,"hepTopTag")
+		mod["PFJetsHEPTopTagMass"] = mod["PFJetsHEPTopTag"]+'Mass'+jetALGO
+		setattr( proc, mod["PFJetsHEPTopTag"], hepTopTaggerV2.clone(
+                            src = cms.InputTag( srcForPFJets ),
+                            jetPtMin = cms.double(100.0),
+                            mode = cms.int32(4),
+                            minFatjetPt = cms.double(200.),
+                            minCandPt = cms.double(200.),
+                            minSubjetPt = cms.double(30.),
+                            writeCompound = cms.bool(True),
+                            minCandMass = cms.double(0.),
+                            maxCandMass = cms.double(1000),
+                            massRatioWidth = cms.double(100.),
+                            minM23Cut = cms.double(0.),
+                            minM13Cut = cms.double(0.),
+                            maxM13Cut = cms.double(2.)
+                            ))
+		elemToKeep += [ 'keep *_'+mod["PFJetsHEPTopTag"]+'_*_*' ]
+		jetSeq += getattr(proc, mod["PFJetsHEPTopTag"])
+		toolsUsed.append( mod["PFJetsHEPTopTag"] )
+		setattr( proc, mod["PFJetsHEPTopTagMass"], ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag(mod["PFJets"]),
 				matched = cms.InputTag(mod["PFJetsHEPTopTag"]), distMax = cms.double( jetSize ) ) )
-			elemToKeep += [ 'keep *_'+mod["PFJetsHEPTopTagMass"]+'_*_*' ]
-			getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["PFJetsHEPTopTagMass"] ]
-			jetSeq += getattr(proc, mod["PFJetsHEPTopTag"])
-			jetSeq += getattr(proc, mod["PFJetsHEPTopTagMass"])
-			toolsUsed.append( mod["PFJetsHEPTopTagMass"] )
-		else:
-			raise ValueError('|---- jetToolBox: CMS recommends CambridgeAachen w/ jet cone size > 1.0 for HEPTopTagger, you are using '+algorithm+'. JetToolbox will not run HEP TopTagger.')
+		elemToKeep += [ 'keep *_'+mod["PFJetsHEPTopTagMass"]+'_*_*' ]
+		getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["PFJetsHEPTopTagMass"] ]
+		jetSeq += getattr(proc, mod["PFJetsHEPTopTagMass"])
+		toolsUsed.append( mod["PFJetsHEPTopTagMass"] )
 	#################################################################################
 
 
@@ -1143,7 +1168,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 
 	#################################################################################
-
+	###### Saving jet collections
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
 	setattr( proc, mod["selPATJets"], selectedPatJets.clone( src = mod["PATJets"], cut = Cut ) )
@@ -1151,18 +1176,19 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_calo*_*' ]
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_tagInfos_*' ]
 
+	###### Saving subjet collections
 	if updateCollectionSubjets:
 		mod["PATSubjets"] = patJets+mod["PATSubjetsLabel"]
 		mod["selPATSubjets"] = selPatJets+mod["PATSubjetsLabel"]
 		setattr( proc, mod["selPATSubjets"], selectedPatJets.clone( src = mod["PATSubjets"], cut = Cut ) )
 		elemToKeep += [ 'keep *_'+mod["selPATSubjets"]+'__*' ]
 
-
 	if len(toolsUsed) > 0 and verbosity>=2: print('|---- jetToolBox: Running '+', '.join(toolsUsed)+'.')
 	if verbosity>=2: print('|---- jetToolBox: Creating '+mod["selPATJets"]+' collection.')
 	if updateCollectionSubjets and verbosity>=2: print('|---- jetToolBox: Creating '+mod["selPATSubjets"]+' collection.')
 
-	### "return"
+	#################################################################################
+	###### Adding to outputModule OR creating output file
 	setattr(proc, jetSequence, jetSeq)
 	if hasattr(proc, outputFile): getattr(proc, outputFile).outputCommands += elemToKeep
 	else: setattr( proc, outputFile,
@@ -1170,7 +1196,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				fileName = cms.untracked.string('jettoolbox.root'),
 				outputCommands = cms.untracked.vstring( elemToKeep ) ) )
 
-	##### (Temporary?) fix to replace unschedule mode
+	#################################################################################
+	##### fix to replace unschedule mode
 	if hasattr(proc, 'jetTask'):
 		getattr( proc, 'jetTask', cms.Task() ).add(*[getattr(proc,prod) for prod in proc.producers_()])
 		getattr( proc, 'jetTask', cms.Task() ).add(*[getattr(proc,filt) for filt in proc.filters_()])
@@ -1188,6 +1215,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	 	else:
 	 		setattr( proc, 'endpath', cms.EndPath(getattr(proc, outputFile), getattr( proc, 'jetTask', cms.Task() )) )
 
+	#################################################################################
 	#### removing mc matching for data
 	if runOnData:
 		from PhysicsTools.PatAlgos.tools.coreTools import removeMCMatching
