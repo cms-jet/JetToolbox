@@ -41,6 +41,21 @@ A working example, after running the cmsDriver command shown above, is located h
 
 All the variables created by the jetToolbox start with `jetToolbox_selectedJet`.
 
+## To run DeepDoubleX
+
+While the PR is merged to the main cmssw code, please follow this instructions:
+```
+git cms-merge-topic 25371
+git cms-addpkg RecoBTag/Combined
+cd RecoBTag/Combined/
+git clone -b V01-01-01 --depth 1 --no-checkout https://github.com/cms-data/RecoBTag-Combined.git data
+cd data
+git config core.sparseCheckout true
+echo 'DeepDoubleX/94X/V01/' > .git/info/sparse-checkout
+git checkout --
+cd $CMSSW_BASE/src
+scram b -j 10
+```
 
 ## More Information
 
