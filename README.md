@@ -6,11 +6,11 @@ Python framework for configuration of jet tools via the jet toolbox.
 Check the branch for the correspondent release. This branch is for *CMSSW_9_4_12* and higher. This release is **needed** for DeepDoubleX and DeepBoostedJet. If you are not planning on using those b-discriminators you can use an ealier release.
 Then for example:
 ```
-cmsrel CMSSW_9_4_12/
+cmsrel CMSSW_9_4_12
 cd CMSSW_9_4_12/src/
 git cms-init
-git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_94X_v4
-scram b -j 18
+git clone git@github.com:alefisico/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_94X
+scram b -j 8
 ```
 
 To test the toolbox:
@@ -27,7 +27,7 @@ In this python file you also can see a basic example on how to use the toolbox.
 
 This branch is a test to implement the jetToolbox into nanoAOD. *IT IS A WORKING VERSION*.
 
-The only file that needs to be modified is (JMEAnalysis/JetToolbox/python/nanoAOD_jetToolbox_cff.py)[https://github.com/alefisico/JetToolbox/blob/jetToolbox_94X/python/nanoAOD_jetToolbox_cff.py#L8-L31], using the same setting as in the miniAOD case. Notice that the parameter `miniAOD=True` has changed to `dataTier=miniAOD` (or in this case `dataTier=nanoAOD`). After modify the `setupCustomizedJetToolbox` function in that file, one can run a cmsDriver command. For instance:
+The only file that needs to be modified is [JMEAnalysis/JetToolbox/python/nanoAOD_jetToolbox_cff.py](https://github.com/alefisico/JetToolbox/blob/jetToolbox_94X/python/nanoAOD_jetToolbox_cff.py#L8-L31), using the same setting as in the miniAOD case. Notice that the parameter `miniAOD=True` has changed to `dataTier=miniAOD` (or in this case `dataTier=nanoAOD`). After modify the `setupCustomizedJetToolbox` function in that file, one can run a cmsDriver command. For instance:
 
 ~~~
 cmsDriver.py jetToolbox_nanoAOD -n 10 --mc --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 94X_mcRun2_asymptotic_v2 --step NANO --nThreads 4 --era Run2_2016,run2_miniAOD_80XLegacy --customise JMEAnalysis/JetToolbox/nanoAOD_jetToolbox_cff.nanoJTB_customizeMC --filein
@@ -37,7 +37,7 @@ cmsDriver.py jetToolbox_nanoAOD -n 10 --mc --eventcontent NANOAODSIM --datatier 
 Notice that the `--customise` option points to the file `JMEAnalysis/JetToolbox/python/nanoAOD_jetToolbox_cff.py`. 
 
 
-A working example, after running the cmsDriver command shown above, is located here: (JMEAnalysis/JetToolbox/test/jetToolbox_nanoAOD_NANO.py)[https://github.com/alefisico/JetToolbox/blob/jetToolbox_94X/test/jetToolbox_nanoAOD_NANO.py]. 
+A working example, after running the cmsDriver command shown above, is located here: [JMEAnalysis/JetToolbox/test/jetToolbox_nanoAOD_NANO.py](https://github.com/alefisico/JetToolbox/blob/jetToolbox_94X/test/jetToolbox_nanoAOD_NANO.py). 
 
 All the variables created by the jetToolbox start with `jetToolbox_selectedJet`.
 
