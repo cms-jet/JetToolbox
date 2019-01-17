@@ -150,54 +150,31 @@ jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
 #jetToolbox( process, 'ca12', 'ca12JetSubs', 'out', PUMethod='SK', addHEPTopTagger=True, addSoftDrop=True, miniAOD=False )
 #jetToolbox( process, 'ca12', 'ca12JetSubs', 'out', addHEPTopTagger=True, addSoftDrop=True, miniAOD=False )
 
-#jetToolbox( process, 'ak8', 'jetSequence', 'out', PUMethod='Puppi', miniAOD=True,
-#                Cut='pt > 200 && abs(eta) < 2.5', # Tight
-#                #nameNewPFCollection='hltScoutingPFPacker',
-#                #nameNewPFCollection='pippo',
-#		updateCollection='slimmedJetsAK8',
-#		JETCorrPayload='AK8PFPuppi',
-#		postFix='NEW',
-#                addSoftDrop=True,
-#				#addPruning = True,
-#		  		#addSoftDrop = True,
-#				#addFiltering=True,
-#                addNsub    = True,
-#		bTagDiscriminators = ['pfBoostedDoubleSecondaryVertexAK8BJetTags' ],  #pfDeepDoubleBvLJetTags:probQCD'],
-#                #addPrunedSubjets=True, addSoftDropSubjets=True,
-#                #addNsubSubjets  =True
-#		#		addSoftDropSubjets = True,
-#                #addEnergyCorrFunc = True, ecfN3 = True,
-#                saveJetCollection = True,
-#                )
-#jetToolbox( process, 'ca15', 'jetSequence', 'out', addHEPTopTagger=True, addSoftDrop=True,saveJetCollection=True )
-
-bTagDiscriminators = [
-        'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-        'pfBoostedDoubleSecondaryVertexAK8BJetTags',
-]
-subjetBTagDiscriminators = [
-        'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-        'pfDeepCSVJetTags:probb',
-        'pfDeepCSVJetTags:probbb',
-]
-JETCorrLevels = ['L2Relative', 'L3Absolute', 'L2L3Residual']
-
-jetToolbox(process, 'ak8', 'dummySeq', 'out', saveJetCollection=True,
-               PUMethod='Puppi', JETCorrPayload='AK8PFPuppi', JETCorrLevels=JETCorrLevels,
-               Cut='pt > 170.0 && abs(rapidity()) < 2.4',
-               #miniAOD=True,
-               dataTier='miniAOD',
-               addNsub=True, maxTau=3, addEnergyCorrFunc=True,
-               addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
-bTagDiscriminators=bTagDiscriminators, subjetBTagDiscriminators=subjetBTagDiscriminators)
+jetToolbox( process, 'ak4', 'jetSequence', 'out', PUMethod='Puppi', miniAOD=True,
+                #Cut='pt > 200 && abs(eta) < 2.5', # Tight
+                #nameNewPFCollection='hltScoutingPFPacker',
+                #nameNewPFCollection='pippo',
+				#addPruning = True,
+		  		addSoftDrop = True,
+				#addFiltering=True,
+                #addNsub    = True,
+                #addPrunedSubjets=True, addSoftDropSubjets=True,
+                #addNsubSubjets  =True
+				addSoftDropSubjets = True,
+                addEnergyCorrFunc = True, ecfN3 = True,
+				saveJetCollection = True,
+                )
 
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 process.source = cms.Source("PoolSource",
 #		fileNames = cms.untracked.vstring(#'file:example.root'
 		fileNames = cms.untracked.vstring(
 			'/store/data/Run2016G/JetHT/MINIAOD/PromptReco-v1/000/280/002/00000/E82E26C7-4375-E611-AE7F-FA163E48F736.root'
+			#'/store/mc/RunIIFall17MiniAOD/QCD_HT1000to1500_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/94X_mc2017_realistic_v10-v1/00000/02961665-F9F9-E711-87B5-0026B93F49B0.root'
+			#'/store/mc/RunIIFall17MiniAODv2/Res1ToRes2GluTo3Glu_M1-2000_R-0p1_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/44F72487-F763-E811-9E6C-6C3BE5B5E4C0.root'
+			#'/store/relval/CMSSW_9_4_5_cand1/JetHT/MINIAOD/94X_dataRun2_relval_v11_RelVal_rmaod_jetHT2017B-v1/10000/18B5E95F-992E-E811-9422-0CC47A78A418.root'
 			),
 		)
 
