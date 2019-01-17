@@ -52,7 +52,6 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addQGTagger=False, QGjetsLabel='chs',
 		addEnergyCorrFunc=False, ecfType = "N", ecfBeta = 1.0, ecfN3 = False,
 		addEnergyCorrFuncSubjets=False, ecfSubjetType = "N", ecfSubjetBeta = 1.0, ecfSubjetN3 = False,
-		saveJetCollection=False,    # set this to true to enable creation of edm root file
 		verbosity=2, 	# 0 = no printouts, 1 = warnings only, 2 = warnings & info, 3 = warnings, info, debug
 		):
 
@@ -140,12 +139,12 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	defaultBoostedBTagDiscriminators = [
                         'pfBoostedDoubleSecondaryVertexAK8BJetTags',
-                        'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
-                        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
-                        'pfMassIndependentDeepDoubleCvLJetTags:probQCD',
-                        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
-                        'pfMassIndependentDeepDoubleCvBJetTags:probHbb',
-                        'pfMassIndependentDeepDoubleCvBJetTags:probHcc',
+                        #'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
+                        #'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+                        #'pfMassIndependentDeepDoubleCvLJetTags:probQCD',
+                        #'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
+                        #'pfMassIndependentDeepDoubleCvBJetTags:probHbb',
+                        #'pfMassIndependentDeepDoubleCvBJetTags:probHcc',
                         ]
 
 	if updateCollection and (jetALGO=='AK8'):
@@ -1204,21 +1203,19 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	#################################################################################
 	###### Adding to outputModule OR creating output file
 	setattr(proc, jetSequence, jetSeq)
-        if outputFile!='':
-            if hasattr(proc, outputFile): getattr(proc, outputFile).outputCommands += elemToKeep
-            else: setattr( proc, outputFile,
-			cms.OutputModule('PoolOutputModule',
-				fileName = cms.untracked.string('jettoolbox.root'),
-				outputCommands = cms.untracked.vstring( elemToKeep ) ) )
+        if hasattr(proc, outputFile): getattr(proc, outputFile).outputCommands += elemToKeep
+        else: setattr( proc, outputFile,
+                    cms.OutputModule('PoolOutputModule',
+                            fileName = cms.untracked.string('jettoolbox.root'),
+                            outputCommands = cms.untracked.vstring( elemToKeep ) ) )
 
-	#################################################################################
-	##### fix to replace unschedule mode
-	if saveJetCollection:
-		task = getPatAlgosToolsTask(proc)
-	 	if hasattr(proc, 'endpath'):
-			getattr(proc, 'endpath').associate(task)
-	 	else:
-	 		setattr( proc, 'endpath', cms.EndPath(getattr(proc, outputFile), task) )
+        task = getPatAlgosToolsTask(proc)
+        if hasattr(proc, 'endpath'):
+            getattr(proc, 'endpath').associate(task)
+        else:
+            if outputFile=='noOutput':
+                setattr( proc, 'endpath', cms.EndPath(task) )
+            else: setattr( proc, 'endpath', cms.EndPath(getattr(proc, outputFile), task) )
 
 	#################################################################################
 	#### removing mc matching for data

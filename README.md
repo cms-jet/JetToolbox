@@ -3,11 +3,11 @@ Python framework for configuration of jet tools via the jet toolbox.
 
 ## Instructions
 
-Check the branch for the correspondent release. This branch is for *CMSSW_9_4_12* and higher. This version is **needed** for DeepDoubleX and DeepBoostedJet. If you are not planning on using those b-discriminators you can use an ealier release.
+Check the branch for the correspondent release. This branch is for *CMSSW_10_2_X* and higher. 
 Then for example:
 ```
-cmsrel CMSSW_10_2_0/
-cd CMSSW_10_2_0/src/
+cmsrel CMSSW_10_2_9/
+cd CMSSW_10_2_9/src/
 git cms-init
 git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_102X_v1
 scram b -j 18

@@ -162,7 +162,6 @@ jetToolbox( process, 'ak4', 'jetSequence', 'out', PUMethod='Puppi', miniAOD=True
                 #addNsubSubjets  =True
 				addSoftDropSubjets = True,
                 addEnergyCorrFunc = True, ecfN3 = True,
-				saveJetCollection = True,
                 )
 
 
