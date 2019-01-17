@@ -39,7 +39,7 @@ process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
 from JMEAnalysis.JetToolbox.jetToolbox_cff import *
 
 # AK R=0.4 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ak4', 'ak4JetSubs', 'out',
+jetToolbox( process, 'ak4', 'ak4JetSubs', 'noOutput',
   PUMethod='CHS',
   addPruning=True, addSoftDrop=True ,           # add basic grooming
   addTrimming=True, addFiltering=True,
@@ -49,7 +49,7 @@ jetToolbox( process, 'ak4', 'ak4JetSubs', 'out',
 )
 
 # AK R=0.8 jets from PF inputs with basic grooming, W tagging, and top tagging
-#jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
+#jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
 #  PUMethod='Plain',
 #  addPruning=True, addSoftDrop=True ,           # add basic grooming
 #  addTrimming=True, addFiltering=True,
@@ -59,7 +59,7 @@ jetToolbox( process, 'ak4', 'ak4JetSubs', 'out',
 #)
 
 # AK R=0.8 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
+jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
   PUMethod='CHS',
   addPruning=True, addSoftDrop=True ,           # add basic grooming
   addTrimming=True, addFiltering=True,
@@ -69,7 +69,7 @@ jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
 )
 
 # AK R=0.8 from PUPPI inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
+jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
   PUMethod='Puppi',
   addPruning=True, addSoftDrop=True ,           # add basic grooming
   addTrimming=True, addFiltering=True,
@@ -79,7 +79,7 @@ jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
 )
 
 # CA R=0.8 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ca8', 'ca8JetSubs', 'out',
+jetToolbox( process, 'ca8', 'ca8JetSubs', 'noOutput',
   PUMethod='CHS',
   addPruning=True, addSoftDrop=True ,           # add basic grooming
   addTrimming=True, addFiltering=True,
@@ -89,7 +89,7 @@ jetToolbox( process, 'ca8', 'ca8JetSubs', 'out',
 )
 
 # KT R=0.8 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'kt8', 'kt8JetSubs', 'out',
+jetToolbox( process, 'kt8', 'kt8JetSubs', 'noOutput',
   PUMethod='CHS',
   addPruning=True, addSoftDrop=True ,           # add basic grooming
   addTrimming=True, addFiltering=True,
@@ -99,7 +99,7 @@ jetToolbox( process, 'kt8', 'kt8JetSubs', 'out',
 )
 
 # AK R=1.2 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ak12', 'ak12JetSubs', 'out',
+jetToolbox( process, 'ak12', 'ak12JetSubs', 'noOutput',
   PUMethod='CHS',
   addPruning=True, addSoftDrop=True ,           # add basic grooming
   addTrimming=True, addFiltering=True,
@@ -109,7 +109,7 @@ jetToolbox( process, 'ak12', 'ak12JetSubs', 'out',
 )
 
 # AK R=1.5 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ak15', 'ak15JetSubs', 'out',
+jNoSaveetToolbox( process, 'ak15', 'ak15JetSubs', 'noOutput',
   PUMethod='CHS',
   addPruning=True, addSoftDrop=True ,           # add basic grooming
   addTrimming=True, addFiltering=True,
