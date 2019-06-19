@@ -148,22 +148,38 @@ jetToolbox( process, 'ak8', 'ak8JetSubs', 'out',
 #jetToolbox( process, 'ca8', 'ca8JetSubs', 'out', addCMSTopTagger=True, addMassDrop=True, addSoftDrop=True, miniAOD=False )
 #jetToolbox( process, 'ca12', 'ca12JetSubs', 'out', PUMethod='Puppi', addHEPTopTagger=True, addSoftDrop=True, miniAOD=False )
 #jetToolbox( process, 'ca12', 'ca12JetSubs', 'out', PUMethod='SK', addHEPTopTagger=True, addSoftDrop=True, miniAOD=False )
-#jetToolbox( process, 'ca12', 'ca12JetSubs', 'out', addHEPTopTagger=True, addSoftDrop=True, miniAOD=False )
+#jetToolbox( process, 'ca12', 'ca12JetSubs', 'out', addHEPTopTagger=True, addSoftDrop=True, miniAOD=True)
 
-jetToolbox( process, 'ak4', 'jetSequence', 'out', PUMethod='Puppi', miniAOD=True,
-                #Cut='pt > 200 && abs(eta) < 2.5', # Tight
-                #nameNewPFCollection='hltScoutingPFPacker',
-                #nameNewPFCollection='pippo',
-				#addPruning = True,
-		  		addSoftDrop = True,
-				#addFiltering=True,
-                #addNsub    = True,
-                #addPrunedSubjets=True, addSoftDropSubjets=True,
-                #addNsubSubjets  =True
-				addSoftDropSubjets = True,
-                addEnergyCorrFunc = True, ecfN3 = True,
-                )
+#jetToolbox( process, 'ak4', 'jetSequence', 'out', PUMethod='Puppi', miniAOD=True,
+#                #Cut='pt > 200 && abs(eta) < 2.5', # Tight
+#                #nameNewPFCollection='hltScoutingPFPacker',
+#                #nameNewPFCollection='pippo',
+#				#addPruning = True,
+#		  		addSoftDrop = True,
+#				#addFiltering=True,
+#                #addNsub    = True,
+#                #addPrunedSubjets=True, addSoftDropSubjets=True,
+#                #addNsubSubjets  =True
+#				addSoftDropSubjets = True,
+#                addEnergyCorrFunc = True, ecfN3 = True,
+#                )
+#
 
+jetToolbox( process, 'ak15', 'ak15JetSubs', 'noOutput',
+   PUMethod='Puppi',
+   addPruning=True, addSoftDrop=True ,           # add basic grooming
+   addTrimming=True, addFiltering=True,
+   addSoftDropSubjets=True,
+   addPrunedSubjets=True,
+   addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
+   JETCorrPayload = 'AK8PFPuppi', #JETCorrLevels = ['L2Relative', 'L3Absolute'],
+   runOnMC=False,
+   miniAOD=True,
+   Cut='pt > 100 && abs(eta) < 2.5',
+   GetJetMCFlavour=False,
+   #GetSubJetMCFlavour=True,
+   addHEPTopTagger=True
+   )
 
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )

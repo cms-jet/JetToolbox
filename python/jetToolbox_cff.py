@@ -182,7 +182,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	####### Recluster jets from scratch
 	if not updateCollection:
 
-		mod["GenJetsNoNu"] = jetalgo+'GenJetsNoNu'
+                mod["GenJetsNoNu"] = jetalgo+'GenJetsNoNu'
 
 		####### Setting labels and running GenJets
 		if miniAOD:
@@ -275,7 +275,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				jetSeq += getattr(proc, 'softKiller' )
 				srcForPFJets = 'softKiller'
 
-			from RecoJets.JetProducers.ak4PFJetsSK_cfi import ak4PFJetsSK
+			from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJetsSK
 			mod["PFJets"] = jetalgo+'PFJetsSK'+postFix
 			_addProcessAndTask( proc, mod["PFJets"],
 					ak4PFJetsSK.clone(  src = cms.InputTag( srcForPFJets ),
@@ -288,10 +288,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		elif 'CS' in PUMethod:
 
-			from RecoJets.JetProducers.ak4PFJetsCHSCS_cfi import ak4PFJetsCHSCS
+			from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJetsCS
 			mod["PFJets"] = jetalgo+'PFJetsCS'+postFix
 			_addProcessAndTask( proc, mod["PFJets"],
-					ak4PFJetsCHSCS.clone( doAreaFastjet = True,
+					ak4PFJetsCS.clone( doAreaFastjet = True,
 						src = cms.InputTag( pfCand ), #srcForPFJets ),
 						csRParam = cms.double(jetSize),
 						jetAlgorithm = algorithm ) )
@@ -367,7 +367,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                     JEC = ( JETCorrPayload.replace('CS','chs').replace('SK','chs') , JETCorrLevels, 'None' )
 		if verbosity>=2: print('|---- jetToolBox: Applying these corrections: '+str(JEC))
 
-		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger:
+		if addPrunedSubjets or addSoftDropSubjets or addCMSTopTagger or addHEPTopTagger:
 			if 'None' in subJETCorrPayload: subJEC = None
 			else: subJEC = ( subJETCorrPayload.replace('CS','chs').replace('SK','chs') , subJETCorrLevels, 'None' )
 		#########################################################################
@@ -520,8 +520,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		if addSoftDropSubjets:
 
 			#### Creating softdrop genjets and gensubjets
+			mod["GenJetsNoNuSoftDrop"] = mod["GenJetsNoNu"]+'SoftDrop'
+
 			if runOnMC:
-				mod["GenJetsNoNuSoftDrop"] = mod["GenJetsNoNu"]+'SoftDrop'
 				_addProcessAndTask( proc, mod["GenJetsNoNuSoftDrop"],
 						ak4GenJets.clone(
 							SubJetParameters,
@@ -657,9 +658,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		#### For subjets
 		if addPrunedSubjets:
 
+			mod["GenJetsNoNuPruned"] = mod["GenJetsNoNu"]+'Pruned'
 			#### Creating pruning genjets and gensubjets
 			if runOnMC:
-				mod["GenJetsNoNuPruned"] = mod["GenJetsNoNu"]+'Pruned'
 				_addProcessAndTask( proc, mod["GenJetsNoNuPruned"],
 						ak4GenJets.clone(
 							SubJetParameters,
@@ -932,8 +933,11 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 						rParam = jetSize,
 						src = cms.InputTag( mod["PFJetsConstituentsColonOrUpdate"] ),
 						) )
-			_addProcessAndTask( proc, mod["MassDropFilteredMass"], ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag( mod["PFJets"]),
-				matched = cms.InputTag(mod["PFJetsMassDrop"]), distMax = cms.double( jetSize ) ) )
+			_addProcessAndTask( proc, mod["MassDropFilteredMass"],
+                                ak8PFJetsCHSPrunedMass.clone(
+                                    src = cms.InputTag( mod["PFJets"]),
+                                    matched = cms.InputTag(mod["PFJetsMassDrop"]),
+                                    distMax = cms.double( jetSize ) ) )
 			elemToKeep += [ 'keep *_'+mod["MassDropFilteredMass"]+'_*_*' ]
 			getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["MassDropFilteredMass"] ]
 			jetSeq += getattr(proc, mod["PFJetsMassDrop"])
@@ -965,17 +969,90 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                             massRatioWidth = cms.double(100.),
                             minM23Cut = cms.double(0.),
                             minM13Cut = cms.double(0.),
-                            maxM13Cut = cms.double(2.)
+                            maxM13Cut = cms.double(2.),
+                            jetCollInstanceName=cms.string('SubJets'),
                             ))
-		elemToKeep += [ 'keep *_'+mod["PFJetsHEPTopTag"]+'_*_*' ]
+		elemToKeep += [ 'keep *_'+mod["PFJetsHEPTopTag"]+'__*' ]
+		elemToKeep += [ 'keep *_'+mod["PFJetsHEPTopTag"]+'_SubJets_*' ]
 		jetSeq += getattr(proc, mod["PFJetsHEPTopTag"])
 		toolsUsed.append( mod["PFJetsHEPTopTag"] )
-		_addProcessAndTask( proc, mod["PFJetsHEPTopTagMass"], ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag(mod["PFJets"]),
-				matched = cms.InputTag(mod["PFJetsHEPTopTag"]), distMax = cms.double( jetSize ) ) )
+		_addProcessAndTask( proc, mod["PFJetsHEPTopTagMass"],
+                        ak8PFJetsCHSPrunedMass.clone(
+                            src = cms.InputTag(mod["PFJets"]),
+                            matched = cms.InputTag(mod["PFJetsHEPTopTag"]),
+                            distMax = cms.double( jetSize ),
+                            #values = cms.vstring([ "mass", "tagInfo().properties().fRec()"] ),
+                            #valueLabels = cms.vstring(["mass","fRec"])
+                            ) )
 		elemToKeep += [ 'keep *_'+mod["PFJetsHEPTopTagMass"]+'_*_*' ]
-		getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["PFJetsHEPTopTagMass"] ]
+                getattr( proc, mod["PATJets"] ).userData.userFloats.src += [ mod["PFJetsHEPTopTagMass"] ]
+                #getattr( proc, mod["PATJets"] ).userData.userFloats.src += [ "fRec" ]
 		jetSeq += getattr(proc, mod["PFJetsHEPTopTagMass"])
 		toolsUsed.append( mod["PFJetsHEPTopTagMass"] )
+
+
+                mod["PATJetsHEPTopTagLabel"] = 'HEPTopTag'+PUMethod+postFix
+                addJetCollection(
+                                proc,
+                                labelName = mod["PATJetsHEPTopTagLabel"],
+                                jetSource = cms.InputTag(mod["PFJetsHEPTopTag"]),
+                                jetCorrections = JEC if JEC is not None else None,
+                                pfCandidates = cms.InputTag( pfCand ),
+                                pvSource = cms.InputTag( pvLabel),
+                                svSource = cms.InputTag( svLabel ),
+                                muSource = cms.InputTag( muLabel ),
+                                elSource = cms.InputTag( elLabel ),
+                                btagDiscriminators = bTagDiscriminators,
+                                btagInfos = bTagInfos,
+                                genJetCollection = cms.InputTag(mod["GenJetsNoNu"]),
+                                getJetMCFlavour = False, # jet flavor should always be disabled for groomed jets
+                                genParticles = cms.InputTag(genParticlesLabel)
+                                )
+                mod["PATJetsHEPTopTag"] = patJets+mod["PATJetsHEPTopTagLabel"]
+                mod["selPATJetsHEPTopTag"] = selPatJets+mod["PATJetsHEPTopTagLabel"]
+                getattr(proc,mod["PATJetsHEPTopTag"]).addTagInfos = True
+                getattr(proc,mod["PATJetsHEPTopTag"]).tagInfoSources = cms.VInputTag( cms.InputTag(mod["PFJetsHEPTopTag"]))
+                _addProcessAndTask( proc, mod["selPATJetsHEPTopTag"],
+                        selectedPatJets.clone( src = mod["PATJetsHEPTopTag"], cut = Cut ) )
+		jetSeq += getattr(proc, mod["selPATJetsHEPTopTag"])
+		elemToKeep += [ 'keep *_'+mod["selPATJetsHEPTopTag"]+'_*_*' ]
+
+                mod["PATSubjetsHEPTopTagLabel"] = mod["PATJetsHEPTopTagLabel"]+'Subjets'
+                addJetCollection(
+                                proc,
+                                labelName = mod["PATSubjetsHEPTopTagLabel"],
+                                jetSource = cms.InputTag(mod["PFJetsHEPTopTag"], 'SubJets'),
+                                algo = jetalgo,  # needed for subjet b tagging
+                                rParam = jetSize,  # needed for subjet b tagging
+                                jetCorrections = subJEC if subJEC is not None else None,
+                                pfCandidates = cms.InputTag( pfCand ),
+                                pvSource = cms.InputTag( pvLabel),
+                                svSource = cms.InputTag( svLabel ),
+                                muSource = cms.InputTag( muLabel ),
+                                elSource = cms.InputTag( elLabel ),
+                                btagDiscriminators = bTagDiscriminators,
+                                btagInfos = bTagInfos,
+                                genJetCollection = cms.InputTag( mod["GenJetsNoNu"]),
+                                getJetMCFlavour = GetSubjetMCFlavour,
+                                explicitJTA = True,  # needed for subjet b tagging
+                                svClustering = True, # needed for subjet b tagging
+                                fatJets=cms.InputTag(mod["PFJets"]),             # needed for subjet flavor clustering
+                                groomedFatJets=cms.InputTag(mod["PATJetsHEPTopTag"]), # needed for subjet flavor clustering
+                                genParticles = cms.InputTag(genParticlesLabel)
+                                )
+                mod["PATSubjetsHEPTopTag"] = patJets+mod["PATSubjetsHEPTopTagLabel"]
+                mod["selPATSubjetsHEPTopTag"] = selPatJets+mod["PATSubjetsHEPTopTagLabel"]
+
+                _addProcessAndTask( proc, mod["selPATSubjetsHEPTopTag"], selectedPatJets.clone( src = mod["PATSubjetsHEPTopTag"], cut = Cut ) )
+                mod["PATJetsHEPTopTagPacked"] = mod["PATJetsHEPTopTag"]+'Packed'
+                _addProcessAndTask( proc, mod["PATJetsHEPTopTagPacked"],
+                                cms.EDProducer("BoostedJetMerger",
+                                        jetSrc=cms.InputTag(mod["PATJetsHEPTopTag"]),
+                                        subjetSrc=cms.InputTag(mod["PATSubjetsHEPTopTag"])
+                                        ))
+                jetSeq += getattr(proc, mod["PATJetsHEPTopTagPacked"])
+                elemToKeep += [ 'keep *_'+mod["PATJetsHEPTopTagPacked"]+'_*_*' ]
+                toolsUsed.append( mod["PATJetsHEPTopTagPacked"] )
 	#################################################################################
 
 
