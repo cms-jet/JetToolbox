@@ -25,7 +25,7 @@ def setupCustomizedJetToolbox(process):
     ]
     JETCorrLevels = ['L2Relative', 'L3Absolute', 'L2L3Residual']
 
-    from JMEAnalysis.JetToolbox.jetToolbox_cff_withNanoAOD import jetToolbox
+    from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
     jetToolbox(process, 'ak8', 'dummyseq', 'noOutput',
                dataTier='nanoAOD',
                PUMethod='Puppi', JETCorrPayload='AK4PFPuppi', JETCorrLevels=JETCorrLevels,
