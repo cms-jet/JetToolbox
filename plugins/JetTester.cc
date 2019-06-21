@@ -820,7 +820,7 @@ JetTester::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace std;
   using namespace reco;
   using namespace pat;
-  bool verbose = false;
+  //bool verbose = false;
 
   //--------------------------------------------------------------------------------------------
   // AK R=0.4 CHS jets - from miniAOD
