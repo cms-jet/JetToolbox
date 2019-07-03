@@ -4,39 +4,69 @@ from  PhysicsTools.NanoAOD.common_cff import *
 from Configuration.Eras.Modifier_run2_nanoAOD_94X2016_cff import run2_nanoAOD_94X2016
 from Configuration.Eras.Modifier_run2_nanoAOD_94XMiniAODv2_cff import run2_nanoAOD_94XMiniAODv2
 from Configuration.Eras.Modifier_run2_nanoAOD_102Xv1_cff import run2_nanoAOD_102Xv1
+from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
 
 # ---------------------------------------------------------
 # This is the part the user should modify
 def setupCustomizedJetToolbox(process):
 
-    # recluster Puppi jets, add N-Subjettiness and ECF
-    bTagDiscriminators = [
-        #'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-        #'pfBoostedDoubleSecondaryVertexAK8BJetTags',
-        'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
-        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
-        #'pfDeepCSVJetTags:probb',
-        #'pfDeepCSVJetTags:probbb',
-    ]
-    subjetBTagDiscriminators = [
-        'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-        'pfDeepCSVJetTags:probb',
-        'pfDeepCSVJetTags:probbb',
-    ]
-    JETCorrLevels = ['L2Relative', 'L3Absolute', 'L2L3Residual']
+    #### AK4 PUPPI jets
 
-    from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
-    jetToolbox(process, 'ak8', 'dummyseq', 'noOutput',
+    ak4btagdiscriminators = [
+            'pfDeepCSVJetTags:probb',
+            'pfDeepCSVJetTags:probbb',
+            'pfDeepCSVJetTags:probc',
+            'pfDeepCSVJetTags:probudsg',
+#            'pfDeepFlavourJetTags:probb',
+#            'pfDeepFlavourJetTags:probbb',
+#            'pfDeepFlavourJetTags:problepb',
+#            'pfDeepFlavourJetTags:probc',
+#            'pfDeepFlavourJetTags:probuds',
+#            'pfDeepFlavourJetTags:probg',
+    ]
+    ak4btaginfos = [ 'pfDeepCSVTagInfos' ] #'pfDeepFlavourTagInfos'
+
+    jetToolbox(process, 'ak4', 'dummyseq', 'noOutput',
                dataTier='nanoAOD',
-               PUMethod='Puppi', JETCorrPayload='AK4PFPuppi', JETCorrLevels=JETCorrLevels,
+               PUMethod='Puppi', JETCorrPayload='AK4PFPuppi',
                #addQGTagger=True,
-               Cut='pt > 170.0 && abs(rapidity()) < 2.4',
                runOnMC=True,
-               addNsub=True, maxTau=3, addEnergyCorrFunc=True,
-               addSoftDrop=True, addSoftDropSubjets=True, subJETCorrPayload='AK4PFPuppi', subJETCorrLevels=JETCorrLevels,
-               #bTagDiscriminators=bTagDiscriminators,
-               #subjetBTagDiscriminators=subjetBTagDiscriminators
+               Cut='pt > 15.0 && abs(eta) < 2.4',
+               bTagDiscriminators=ak4btagdiscriminators,
+               bTagInfos=ak4btaginfos,
+               verbosity=4
                )
+
+    #### AK8 PUPPI jets
+    ak8btagdiscriminators = [
+                        'pfBoostedDoubleSecondaryVertexAK8BJetTags',
+                        'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
+                        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+                        'pfMassIndependentDeepDoubleCvLJetTags:probQCD',
+                        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
+                        'pfMassIndependentDeepDoubleCvBJetTags:probHbb',
+                        'pfMassIndependentDeepDoubleCvBJetTags:probHcc',
+#                        "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight",
+#                        "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight",
+#                        "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD",
+#                        "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD",
+#                        "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD",
+#                        "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD"
+            ]
+
+    jetToolbox(process, 'ak8', 'adummyseq', 'noOutput',
+               dataTier='nanoAOD',
+               PUMethod='Puppi', JETCorrPayload='AK8PFPuppi',
+               runOnMC=True,
+               Cut='pt > 170.0 && abs(eta) < 2.4',
+               bTagDiscriminators=ak8btagdiscriminators,
+               addSoftDrop=True,
+               addSoftDropSubjets=True,
+               addPruning=True,
+               addNsub=True,
+               addEnergyCorrFunc=True,
+               )
+    return process
 
 # ---------------------------------------------------------
 

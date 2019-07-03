@@ -1294,7 +1294,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
         mod["tightJetIdLepVeto"] = mod["PATJets"]+"tightJetIdLepVeto"
 	_addProcessAndTask( proc, mod["tightJetIdLepVeto"], tightJetIdLepVeto.clone(src = cms.InputTag(mod["PATJets"]) ))
 
-	_addProcessAndTask( proc, "PATJetswithUserData",
+        mod["PATJetswithUserData"] = mod["PATJets"]+"PATJetswithUserData"
+	_addProcessAndTask( proc, mod["PATJetswithUserData"],
                             cms.EDProducer("PATJetUserDataEmbedder",
                                     src = cms.InputTag(mod["PATJets"]),
                                     userFloats = cms.PSet(),
@@ -1304,7 +1305,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                                        tightIdLepVeto = cms.InputTag(mod["tightJetIdLepVeto"]),
                                         ))
                             )
-        jetSeq += getattr(proc, "PATJetswithUserData")
+        jetSeq += getattr(proc, mod["PATJetswithUserData"])
 	#################################################################################
 
 
@@ -1313,8 +1314,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
 	#_addProcessAndTask( proc, mod["selPATJets"], selectedPatJets.clone( src = mod["PATJets"], cut = Cut ) )
-	_addProcessAndTask( proc, mod["selPATJets"], cms.EDFilter("PATJetRefSelector", src = cms.InputTag("PATJetswithUserData"), cut = cms.string( Cut ) ) )
-	elemToKeep += [ 'keep *_'+mod["selPATJets"]+'_*_*' ]
+	_addProcessAndTask( proc, mod["selPATJets"], cms.EDFilter("PATJetRefSelector", src = cms.InputTag(mod["PATJetswithUserData"]), cut = cms.string( Cut ) ) )
+	elemToKeep += [ 'keep *_'+mod["selPATJets"]+'_*_*'
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_calo*_*' ]
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_tagInfos_*' ]
 
@@ -1338,22 +1339,28 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
             #### Adding genJets info
             if runOnMC:
                 from PhysicsTools.NanoAOD.jets_cff import genJetTable, genSubJetAK8Table
-                _addProcessAndTask( proc, 'jetToolboxGenJetTable', genJetTable.clone(
+                mod['jetToolboxGenJetTable'] = mod['GenJetsNoNu']+'JTBTable'
+                _addProcessAndTask( proc, mod['jetToolboxGenJetTable'], genJetTable.clone(
                     src = cms.InputTag(mod["GenJetsNoNu"]),
                     name = cms.string(mod["GenJetsNoNu"]),
                     doc=cms.string("customized jetToolbox variables for genjets"),
                     cut = cms.string(("pt > 100." if jetSize>.7 else 'pt>10' )),
                     ))
+                jetSeq += getattr(proc, mod['jetToolboxGenJetTable'])
+
                 if addPrunedSubjets or addSoftDropSubjets:
-                    _addProcessAndTask( proc, 'jetToolboxGenSubJetTable', genJetTable.clone(
+                    mod['jetToolboxGenSubJetTable'] = mod["GenJetsNoNu"+("SoftDrop" if addSoftDropSubjets else "Pruned")]+'JTBTable'
+                    _addProcessAndTask( proc, mod['jetToolboxGenSubJetTable'], genJetTable.clone(
                         src = cms.InputTag(mod["GenJetsNoNu"+("SoftDrop" if addSoftDropSubjets else "Pruned")]),
                         name = cms.string(mod["GenJetsNoNu"+("SoftDrop" if addSoftDropSubjets else "Pruned")]),
                         doc=cms.string("customized jetToolbox variables for gensubjets"),
                         ))
+                    jetSeq += getattr(proc, mod['jetToolboxGenSubJetTable'])
 
 
             #### Adding Jets info
-            _addProcessAndTask( proc, 'jetToolboxJetTable', cms.EDProducer("SimpleCandidateFlatTableProducer",
+            mod['jetToolboxJetTable'] = mod["selPATJets"]+'JTBTable'
+            _addProcessAndTask( proc, mod['jetToolboxJetTable'], cms.EDProducer("SimpleCandidateFlatTableProducer",
                 src=cms.InputTag(mod["selPATJets"]),
                 name=cms.string(mod["selPATJets"]),
                 cut=cms.string(""),
@@ -1379,13 +1386,14 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                 )
             ))
 
-            for varName, varDef in jetVariables.iteritems(): setattr( getattr( proc, 'jetToolboxJetTable' ).variables, varName.replace(":","_"), varDef )
+            for varName, varDef in jetVariables.iteritems(): setattr( getattr( proc, mod['jetToolboxJetTable'] ).variables, varName.replace(":","_"), varDef )
 
             if addPrunedSubjets or addSoftDropSubjets:
-                setattr( getattr( proc, 'jetToolboxJetTable' ).variables, 'subJetIdx1', Var("?nSubjetCollections()>0 && subjets().size()>0?subjets()[0].key():-1", int, doc="index of first subjet") ),
-                setattr( getattr( proc, 'jetToolboxJetTable' ).variables, 'subJetIdx2', Var("?nSubjetCollections()>0 && subjets().size()>1?subjets()[1].key():-1", int, doc="index of second subjet") ),
+                setattr( getattr( proc, mod['jetToolboxJetTable'] ).variables, 'subJetIdx1', Var("?nSubjetCollections()>0 && subjets().size()>0?subjets()[0].key():-1", int, doc="index of first subjet") ),
+                setattr( getattr( proc, mod['jetToolboxJetTable'] ).variables, 'subJetIdx2', Var("?nSubjetCollections()>0 && subjets().size()>1?subjets()[1].key():-1", int, doc="index of second subjet") ),
 
-                _addProcessAndTask( proc, 'jetToolboxSubjetTable', cms.EDProducer("SimpleCandidateFlatTableProducer",
+                mod["jetToolboxSubjetTable"] = mod["selPATJets"+('Pruned' if addPrunedSubjets else 'SoftDrop')+"Packed"]+'SubJetsJTBTable'
+                _addProcessAndTask( proc, mod['jetToolboxSubjetTable'], cms.EDProducer("SimpleCandidateFlatTableProducer",
                     src=cms.InputTag(mod["selPATJets"+('Pruned' if addPrunedSubjets else 'SoftDrop')+"Packed"]+':SubJets'),
                     name=cms.string(mod["selPATJets"]+('Pruned' if addPrunedSubjets else 'SoftDrop')+'_Subjets'),
                     cut=cms.string(""),
@@ -1399,7 +1407,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                         nCHadrons=Var("jetFlavourInfo().getcHadrons().size()", int, doc="number of c-hadrons"),
                     )
                 ))
-                for varName, varDef in subjetVariables.iteritems(): setattr( getattr( proc, 'jetToolboxSubjetTable' ).variables, varName.replace(":","_"), varDef )
+                for varName, varDef in subjetVariables.iteritems(): setattr( getattr( proc, mod['jetToolboxSubjetTable']).variables, varName.replace(":","_"), varDef )
+                jetSeq += getattr(proc, mod['jetToolboxSubjetTable'])
+            jetSeq += getattr(proc, mod['jetToolboxJetTable'])
 	#################################################################################
 
 
