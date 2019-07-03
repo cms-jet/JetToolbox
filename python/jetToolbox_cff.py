@@ -1315,7 +1315,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	#_addProcessAndTask( proc, mod["selPATJets"], selectedPatJets.clone( src = mod["PATJets"], cut = Cut ) )
 	_addProcessAndTask( proc, mod["selPATJets"], cms.EDFilter("PATJetRefSelector", src = cms.InputTag(mod["PATJetswithUserData"]), cut = cms.string( Cut ) ) )
-	elemToKeep += [ 'keep *_'+mod["selPATJets"]+'_*_*'
+	elemToKeep += [ 'keep *_'+mod["selPATJets"]+'_*_*' ]
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_calo*_*' ]
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_tagInfos_*' ]
 
