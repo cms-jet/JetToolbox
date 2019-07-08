@@ -325,7 +325,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					_addProcessAndTask( proc, 'newParticleFlowTmpPtrs', particleFlowTmpPtrs.clone( src = pfCand ) )
 					jetSeq += getattr(proc, 'newParticleFlowTmpPtrs')
 					from CommonTools.ParticleFlow.pfNoPileUpJME_cff import pfPileUpJME, pfNoPileUpJME
-					proc.load('CommonTools.ParticleFlow.goodOfflinePrimaryVertices_cfi')
+					from CommonTools.ParticleFlow.goodOfflinePrimaryVertices_cfi import goodOfflinePrimaryVertices
+					_addProcessAndTask( proc, 'goodOfflinePrimaryVertices', goodOfflinePrimaryVertices.clone( ) )
 					_addProcessAndTask( proc, 'newPfPileUpJME', pfPileUpJME.clone( PFCandidates= 'newParticleFlowTmpPtrs' ) )
 					jetSeq += getattr(proc, 'newPfPileUpJME')
 					_addProcessAndTask( proc, 'newPfNoPileUpJME', pfNoPileUpJME.clone( topCollection='newPfPileUpJME', bottomCollection= 'newParticleFlowTmpPtrs' ) )
