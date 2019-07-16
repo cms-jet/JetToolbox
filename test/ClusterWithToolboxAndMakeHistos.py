@@ -23,7 +23,7 @@ process.options.allowUnscheduled = cms.untracked.bool(True)
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 ### INPUT
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
@@ -31,92 +31,195 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-
 from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
 process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
+
+btagDiscAK4 = [
+            'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+            'pfCombinedCvsLJetTags',
+            'pfCombinedCvsBJetTags',
+            'pfDeepCSVJetTags:probb',
+            'pfDeepCSVJetTags:probbb',
+            'pfDeepCSVJetTags:probc',
+            'pfDeepCSVJetTags:probudsg',
+            'pfDeepFlavourJetTags:probb',
+            'pfDeepFlavourJetTags:probbb',
+            'pfDeepFlavourJetTags:problepb',
+            'pfDeepFlavourJetTags:probc',
+            'pfDeepFlavourJetTags:probuds',
+            'pfDeepFlavourJetTags:probg',
+        ]
+
+btagDiscAK8 = [
+            'pfBoostedDoubleSecondaryVertexAK8BJetTags',
+            #'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
+            #'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+            #'pfMassIndependentDeepDoubleCvLJetTags:probQCD',
+            #'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
+            #'pfMassIndependentDeepDoubleCvBJetTags:probHbb',
+            #'pfMassIndependentDeepDoubleCvBJetTags:probHcc',
+	    "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight",
+	    "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight",
+	    "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD",
+	    "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD",
+ 	    "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD",
+ 	    "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD"
+            ]
 
 ### ADD SOME NEW JET COLLECTIONS
 from JMEAnalysis.JetToolbox.jetToolbox_cff import *
 
-# AK R=0.4 jets from CHS inputs with basic grooming, W tagging, and top tagging
+# updating slimmedJets (ak4 CHS jets) from miniAOD
+jetToolbox( process, 'ak4', 'ak4UpdJetSubs', 'noOutput',
+        dataTier="miniAOD",
+        updateCollection='slimmedJets',
+        JETCorrPayload='AK4PFchs',
+        postFix='Updated',
+        bTagDiscriminators=btagDiscAK4
+        )
+
+# AK R=0.4 jets from CHS inputs
 jetToolbox( process, 'ak4', 'ak4JetSubs', 'noOutput',
+  dataTier="miniAOD",
+  PUMethod='CHS',
+#  JETCorrPayload = 'AK4PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+  addPUJetID=True,
+  addQGTagger=True,
+  Cut='pt>30 && abs(eta)<2.5'
+)
+
+# AK R=0.4 jets from Puppi inputs
+jetToolbox( process, 'ak4', 'ak4JetSubs', 'noOutput',
+  dataTier="miniAOD",
+  PUMethod='Puppi',
+#  JETCorrPayload = 'AK4PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+  Cut='pt>30 && abs(eta)<2.5'
+)
+
+# AK R=0.4 jets from PF inputs
+jetToolbox( process, 'ak4', 'ak4JetSubs', 'noOutput',
+  dataTier="miniAOD",
+  PUMethod='Plain',
+#  JETCorrPayload = 'AK4PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+  Cut='pt>30 && abs(eta)<2.5'
+)
+
+
+
+# updating slimmedAK8Jets (ak8 puppi jets) from miniAOD
+jetToolbox( process, 'ak8', 'ak8UpdJetSubs', 'noOutput',
+        dataTier="miniAOD",
+        PUMethod='Puppi',
+        updateCollection='slimmedJetsAK8',
+        JETCorrPayload='AK8PFPuppi',
+        postFix='Updated',
+        bTagDiscriminators=btagDiscAK8
+        )
+
+# AK R=0.8 jets from CHS
+jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
+  dataTier="miniAOD",
+  Cut="pt>170 && abs(eta)<2.5",
   PUMethod='CHS',
   addPruning=True, addSoftDrop=True ,           # add basic grooming
   addTrimming=True, addFiltering=True,
   addSoftDropSubjets=True,
   addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
-  JETCorrPayload = 'AK4PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute'],
 )
 
-# AK R=0.8 jets from PF inputs with basic grooming, W tagging, and top tagging
+# AK R=0.8 from PUPPI
+jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
+  dataTier="miniAOD",
+  PUMethod='Puppi',
+  Cut="pt>170 && abs(eta)<2.5",
+  addPruning=True, addSoftDrop=True ,           # add basic grooming
+  addTrimming=True, addFiltering=True,
+  addSoftDropSubjets=True,
+  addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
+  addEnergyCorrFunc=True,
+  #JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L2Relative', 'L3Absolute']
+)
+
+# CA R=0.8 jets from CHS
+jetToolbox( process, 'ca8', 'ca8JetSubs', 'noOutput',
+  Cut="pt>170 && abs(eta)<2.5",
+  dataTier="miniAOD",
+  PUMethod='CHS',
+  addPruning=True, addSoftDrop=True ,           # add basic grooming
+  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+)
+
+# KT R=0.8 jets from CHS
+jetToolbox( process, 'kt8', 'kt8JetSubs', 'noOutput',
+  Cut="pt>170 && abs(eta)<2.5",
+  dataTier="miniAOD",
+  PUMethod='CHS',
+  addPruning=True, addSoftDrop=True ,           # add basic grooming
+  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+)
+
+# KT R=0.8 jets from CHS
+jetToolbox( process, 'kt8', 'kt8JetSubs', 'noOutput',
+  dataTier="miniAOD",
+  Cut="pt>170 && abs(eta)<2.5",
+  PUMethod='CHS',
+  addPruning=True, addSoftDrop=True ,           # add basic grooming
+  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+)
+
+# AK R=0.8 jets from Puppi, modified Softdrop
+jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
+  dataTier="miniAOD",
+  Cut="pt>170 && abs(eta)<2.5",
+  PUMethod='Puppi',
+  postFix='modSD',
+  addSoftDrop=True , betaCut=1,           # add basic grooming
+  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+)
+
+# AK R=0.8 jets from SK
+jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
+  dataTier="miniAOD",
+  Cut="pt>170 && abs(eta)<2.5",
+  PUMethod='SK',
+  addPruning=True, addSoftDrop=True ,           # add basic grooming
+  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+)
+
+## AK R=0.8 jets from CS
 #jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
-#  PUMethod='Plain',
+#  PUMethod='CS',
+#  addPruning=True, addSoftDrop=True ,           # add basic grooming
+#  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+#)
+
+# CA R=1.2 jets from CHS inputs with basic grooming, W tagging, and top tagging
+#jetToolbox( process, 'ca12', 'ca12JetSubs', 'noOutput',
+#  PUMethod='CHS',
+#  addHEPTopTagger=True,
+#)
+
+
+## AK R=1.2 jets from CHS inputs with basic grooming, W tagging, and top tagging
+#jetToolbox( process, 'ak12', 'ak12JetSubs', 'noOutput',
+#  PUMethod='CHS',
 #  addPruning=True, addSoftDrop=True ,           # add basic grooming
 #  addTrimming=True, addFiltering=True,
 #  addSoftDropSubjets=True,
 #  addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
-#  JETCorrPayload = 'AK8PF', JETCorrLevels = ['L2Relative', 'L3Absolute']
+#  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
 #)
-
-# AK R=0.8 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
-  PUMethod='CHS',
-  addPruning=True, addSoftDrop=True ,           # add basic grooming
-  addTrimming=True, addFiltering=True,
-  addSoftDropSubjets=True,
-  addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
-  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
-)
-
-# AK R=0.8 from PUPPI inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ak8', 'ak8JetSubs', 'noOutput',
-  PUMethod='Puppi',
-  addPruning=True, addSoftDrop=True ,           # add basic grooming
-  addTrimming=True, addFiltering=True,
-  addSoftDropSubjets=True,
-  addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
-  JETCorrPayload = 'AK8PFPuppi', JETCorrLevels = ['L2Relative', 'L3Absolute']
-)
-
-# CA R=0.8 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ca8', 'ca8JetSubs', 'noOutput',
-  PUMethod='CHS',
-  addPruning=True, addSoftDrop=True ,           # add basic grooming
-  addTrimming=True, addFiltering=True,
-  addSoftDropSubjets=True,
-  addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
-  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
-)
-
-# KT R=0.8 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'kt8', 'kt8JetSubs', 'noOutput',
-  PUMethod='CHS',
-  addPruning=True, addSoftDrop=True ,           # add basic grooming
-  addTrimming=True, addFiltering=True,
-  addSoftDropSubjets=True,
-  addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
-  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
-)
-
-# AK R=1.2 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ak12', 'ak12JetSubs', 'noOutput',
-  PUMethod='CHS',
-  addPruning=True, addSoftDrop=True ,           # add basic grooming
-  addTrimming=True, addFiltering=True,
-  addSoftDropSubjets=True,
-  addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
-  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
-)
-
-# AK R=1.5 jets from CHS inputs with basic grooming, W tagging, and top tagging
-jetToolbox( process, 'ak15', 'ak15JetSubs', 'noOutput',
-  PUMethod='CHS',
-  addPruning=True, addSoftDrop=True ,           # add basic grooming
-  addTrimming=True, addFiltering=True,
-  addSoftDropSubjets=True,
-  addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
-  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
-)
+#
+## AK R=1.5 jets from CHS inputs with basic grooming, W tagging, and top tagging
+#jetToolbox( process, 'ak15', 'ak15JetSubs', 'noOutput',
+#  PUMethod='CHS',
+#  addPruning=True, addSoftDrop=True ,           # add basic grooming
+#  addTrimming=True, addFiltering=True,
+#  addSoftDropSubjets=True,
+#  addNsub=True, maxTau=4,                       # add Nsubjettiness tau1, tau2, tau3, tau4
+#  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
+#)
 
 ### MAKE SOME HISTOGRAMS
 process.ana = cms.EDAnalyzer('JetTester'
@@ -124,11 +227,8 @@ process.ana = cms.EDAnalyzer('JetTester'
 
 ### OUT
 process.TFileService = cms.Service("TFileService",
-      fileName = cms.string("JetClusterHistos_ZP3.root"),
+      fileName = cms.string("jetToolbox_longTest.root"),
       closeFileFast = cms.untracked.bool(True)
   )
-
-# Uncomment the following line if you would like to output the jet collections in a root file
-# process.endpath = cms.EndPath(process.out)
 
 process.p = cms.Path(process.ana)

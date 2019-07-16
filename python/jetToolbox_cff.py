@@ -1314,8 +1314,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	###### Saving jet collections
 	if hasattr(proc, 'patJetPartons'): proc.patJetPartons.particles = genParticlesLabel
 
-	#_addProcessAndTask( proc, mod["selPATJets"], selectedPatJets.clone( src = mod["PATJets"], cut = Cut ) )
-	_addProcessAndTask( proc, mod["selPATJets"], cms.EDFilter("PATJetRefSelector", src = cms.InputTag(mod["PATJetswithUserData"]), cut = cms.string( Cut ) ) )
+        if dataTier.startswith("nanoAOD"): _addProcessAndTask( proc, mod["selPATJets"], cms.EDFilter("PATJetRefSelector", src = cms.InputTag(mod["PATJetswithUserData"]), cut = cms.string( Cut ) ) )
+        else: _addProcessAndTask( proc, mod["selPATJets"], selectedPatJets.clone( src = mod["PATJets"], cut = Cut ) )
 	elemToKeep += [ 'keep *_'+mod["selPATJets"]+'_*_*' ]
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_calo*_*' ]
 	elemToKeep += [ 'drop *_'+mod["selPATJets"]+'_tagInfos_*' ]
@@ -1388,6 +1388,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
             ))
 
             for varName, varDef in jetVariables.iteritems(): setattr( getattr( proc, mod['jetToolboxJetTable'] ).variables, varName.replace(":","_"), varDef )
+            if runOnMC:
+                setattr( getattr( proc, mod['jetToolboxJetTable'] ).variables,  'partonFlavor', Var('partonFlavour()', int, doc="flavour from parton matching" ) )
+                setattr( getattr( proc, mod['jetToolboxJetTable'] ).variables,  'hadronFlavor', Var('hadronFlavour()', int, doc="flavour from hadron matching" ) )
 
             if addPrunedSubjets or addSoftDropSubjets:
                 setattr( getattr( proc, mod['jetToolboxJetTable'] ).variables, 'subJetIdx1', Var("?nSubjetCollections()>0 && subjets().size()>0?subjets()[0].key():-1", int, doc="index of first subjet") ),

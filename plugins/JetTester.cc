@@ -1324,16 +1324,16 @@ JetTester::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //--------------------------------------------------------------------------------------------
   // CA R=1.2 jets - from toolbox
 
-  edm::Handle<pat::JetCollection> CA12CHS;
+  /*edm::Handle<pat::JetCollection> CA12CHS;
   iEvent.getByToken(ca12PFCHSjetToken_, CA12CHS);
 
   for (const pat::Jet &ijet : *CA12CHS) {  
         //cout << ijet.tagInfoLabels() << endl;
         cout << ijet.tagInfo("hepTopTagPFJetsCHS") << endl;
-      /*for ( auto st : ijet.tagInfoLabels() ) {
+      //for ( auto st : ijet.tagInfoLabels() ) {
         cout << st << endl; //ijet.tagInfo("CATop") << endl;
-      }*/
-  }
+      }//
+  }*/
   
 
 
