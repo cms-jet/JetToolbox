@@ -20,19 +20,17 @@ process.GlobalTag.globaltag = '92X_upgrade2017_realistic_v1'
 process.GlobalTag.globaltag = '94X_mc2017_realistic_v12'
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.options.allowUnscheduled = cms.untracked.bool(True)
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 ### INPUT
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(
-'/store/mc/RunIISummer17MiniAOD/ZprimeToTT_M-3000_W-300_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/NZSFlatPU28to62_92X_upgrade2017_realistic_v10-v1/150000/E45A17E6-AAAC-E711-A423-00266CFFC80C.root'
-    )
+    fileNames = cms.untracked.vstring('/store/mc/RunIIAutumn18MiniAOD/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15_ext1-v2/20000/7E65457A-87E5-C146-8321-9A48B4F56ED1.root'),
 )
 
-from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
-process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
+#from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
+#process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
 
 btagDiscAK4 = [
             'pfCombinedInclusiveSecondaryVertexV2BJetTags',

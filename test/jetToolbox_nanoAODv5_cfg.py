@@ -22,7 +22,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
@@ -32,6 +32,7 @@ process.source = cms.Source("PoolSource",
 )
 #from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
 #process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 
 process.options = cms.untracked.PSet(
