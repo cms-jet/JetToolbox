@@ -483,8 +483,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		#########################################################################
 
 	mod["PFJetsOrUpdate"] = mod["PFJets"] if not updateCollection else updateCollection
-        for bD in bTagDiscriminators: jetVariables[bD] = Var("bDiscriminator('"+bD+"')", float, doc='bDiscriminator '+bD, precision=10)
-        for bD in subjetBTagDiscriminators: subjetVariables[bD] = Var("bDiscriminator('"+bD+"')", float, doc='subjet bDiscriminator '+bD, precision=10)
+        if (bTagDiscriminators is not None):
+            for bD in bTagDiscriminators: jetVariables[bD] = Var("bDiscriminator('"+bD+"')", float, doc='bDiscriminator '+bD, precision=10)
+        if (subjetBTagDiscriminators is not None):
+            for bD in subjetBTagDiscriminators: subjetVariables[bD] = Var("bDiscriminator('"+bD+"')", float, doc='subjet bDiscriminator '+bD, precision=10)
 	#################################################################################
 
 	#################################################################################
