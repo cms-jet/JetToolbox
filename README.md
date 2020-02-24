@@ -5,7 +5,7 @@ For more information please visit the twiki [JetToolbox](https://twiki.cern.ch/t
 
 ## For users
 
-The latest version of the jetToolbox is [jetToolbox_102X_v2](https://github.com/cms-jet/JetToolbox/tree/jetToolbox_102X_v2).
+The latest version of the jetToolbox is [jetToolbox_102X_v3](https://github.com/cms-jet/JetToolbox/tree/jetToolbox_102X_v3).
 
 
 ## For developers
