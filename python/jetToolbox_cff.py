@@ -234,8 +234,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			svLabel = 'inclusiveCandidateSecondaryVertices'
 
 			if runOnMC:
-				proc.load('RecoJets.Configuration.GenJetParticles_cff')
-				_addProcessAndTask( proc, mod["GenJetsNoNu"], ak4GenJets.clone( src = 'genParticlesForJetsNoNu', rParam = jetSize, jetAlgorithm = algorithm ) )
+				from RecoJets.Configuration.GenJetParticles_cff import genParticlesForJetsNoNu
+				_addProcessAndTask( proc, 'genParticlesForJetsNoNuTMP', genParticlesForJetsNoNu.clone() )
+				_addProcessAndTask( proc, mod["GenJetsNoNu"], ak4GenJets.clone( src = 'genParticlesForJetsNoNuTMP', rParam = jetSize, jetAlgorithm = algorithm ) )
 				jetSeq += getattr(proc, mod["GenJetsNoNu"])
 		#########################################################################
 
