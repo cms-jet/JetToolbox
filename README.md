@@ -8,10 +8,10 @@ Python framework for configuration of jet tools via the jet toolbox.
 Check the branch for the correspondent release. This branch is for *CMSSW_10_2_X* and higher. 
 Then for example:
 ```
-cmsrel CMSSW_10_2_15/
-cd CMSSW_10_2_15/src/
+cmsrel CMSSW_10_6_1/
+cd CMSSW_10_6_1/src/
 git cms-init
-git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_102X_v2
+git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_102X_v3
 scram b -j 18
 ```
 
