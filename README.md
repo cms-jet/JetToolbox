@@ -11,7 +11,7 @@ Then for example:
 cmsrel CMSSW_10_2_15/
 cd CMSSW_10_2_15/src/
 git cms-init
-git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_102X_v2
+git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_102X_v3
 scram b -j 18
 ```
 
