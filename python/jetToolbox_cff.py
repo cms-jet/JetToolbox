@@ -450,7 +450,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		mod["PATJetsCorrFactors"] = 'patJetCorrFactors'+mod["PATJetsLabelPost"]
 		getattr( proc, mod["PATJetsCorrFactors"] ).payload = JETCorrPayload
 		getattr( proc, mod["PATJetsCorrFactors"] ).levels = JETCorrLevels
-		patJets = ('updatedPatJets' if bTagDiscriminators is None else 'updatedPatJetsTransientCorrected' )
+		patJets = 'updatedPatJets'
 		patSubJets = ''
 		selPatJets = 'selectedPatJets'
 		mod["PATJets"] = patJets+mod["PATJetsLabelPost"]
