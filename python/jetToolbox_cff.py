@@ -10,7 +10,7 @@
 ###############################################
 import FWCore.ParameterSet.Config as cms
 
-from RecoJets.Configuration.RecoPFJets_cff import ak4PFJets, ak8PFJetsCHSSoftDrop, ak8PFJetsCHSSoftDropMass, ak8PFJetsCHSPruned, ak8PFJetsCHSPrunedMass, ak8PFJetsCHSTrimmed, ak8PFJetsCHSTrimmedMass, ak8PFJetsCHSFiltered, ak8PFJetsCHSFilteredMass, ak4PFJetsCHS, ca15PFJetsCHSMassDropFiltered, ak8PFJetsCHSConstituents, puppi
+from RecoJets.Configuration.RecoPFJets_cff import ak4PFJets, ak8PFJetsCHSSoftDrop, ak8PFJetsCHSSoftDropMass, ak8PFJetsCHSPruned, ak8PFJetsCHSPrunedMass, ak8PFJetsCHSTrimmed, ak8PFJetsCHSTrimmedMass, ak8PFJetsCHSFiltered, ak8PFJetsCHSFilteredMass, ak4PFJetsCHS, ca15PFJetsCHSMassDropFiltered, ak8PFJetsCHSConstituents
 from RecoJets.JetProducers.hepTopTaggerV2_cff import hepTopTaggerV2
 from RecoJets.Configuration.RecoGenJets_cff import ak4GenJets
 from RecoJets.JetProducers.SubJetParameters_cfi import SubJetParameters
@@ -249,13 +249,18 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				if verbosity>=1: print('|---- jetToolBox: Not running puppi algorithm because keyword puppi was specified in nameNewPFCollection, but applying puppi corrections.')
 			else:
 				proc.load('CommonTools.PileupAlgos.Puppi_cff')
-				puppi.candName = cms.InputTag( pfCand )
-				if miniAOD:
-				  puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
-				  puppi.clonePackedCands = cms.bool(True)
-                                _addProcessAndTask(proc, 'puppi', getattr(proc, 'puppi'))
-				jetSeq += getattr(proc, 'puppi' )
-				srcForPFJets = 'puppi'
+				mod["puppi"] = "puppi"+pfCand
+				# try to reuse puppi collection if already available
+				if not hasattr(proc, mod["puppi"]):
+					puppi = proc.puppi.clone(
+						candName = cms.InputTag( pfCand )
+					)
+					if miniAOD:
+						puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
+						puppi.clonePackedCands = cms.bool(True)
+					_addProcessAndTask(proc, mod["puppi"], getattr(proc, mod["puppi"]))
+					jetSeq += getattr(proc, mod["puppi"])
+				srcForPFJets = mod["puppi"]
 
 			from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJetsPuppi
 			mod["PFJets"] = jetalgo+'PFJetsPuppi'+postFix
