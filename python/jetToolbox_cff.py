@@ -258,7 +258,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					if miniAOD:
 						puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
 						puppi.clonePackedCands = cms.bool(True)
-					_addProcessAndTask(proc, mod["puppi"], getattr(proc, mod["puppi"]))
+					_addProcessAndTask(proc, mod["puppi"], puppi)
 					jetSeq += getattr(proc, mod["puppi"])
 				srcForPFJets = mod["puppi"]
 
