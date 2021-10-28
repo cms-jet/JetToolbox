@@ -4,6 +4,7 @@ from  PhysicsTools.NanoAOD.common_cff import *
 from Configuration.Eras.Modifier_run2_nanoAOD_94X2016_cff import run2_nanoAOD_94X2016
 from Configuration.Eras.Modifier_run2_nanoAOD_94XMiniAODv2_cff import run2_nanoAOD_94XMiniAODv2
 from Configuration.Eras.Modifier_run2_nanoAOD_102Xv1_cff import run2_nanoAOD_102Xv1
+from Configuration.Eras.Modifier_run2_nanoAOD_106Xv2_cff import run2_nanoAOD_106Xv2
 from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
 
 # ---------------------------------------------------------
@@ -40,12 +41,12 @@ def setupCustomizedJetToolbox(process):
     #### AK8 PUPPI jets
     ak8btagdiscriminators = [
                         'pfBoostedDoubleSecondaryVertexAK8BJetTags',
-                        'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
-                        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
-                        'pfMassIndependentDeepDoubleCvLJetTags:probQCD',
-                        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
-                        'pfMassIndependentDeepDoubleCvBJetTags:probHbb',
-                        'pfMassIndependentDeepDoubleCvBJetTags:probHcc',
+#                        'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
+#                        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+#                        'pfMassIndependentDeepDoubleCvLJetTags:probQCD',
+#                        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
+#                        'pfMassIndependentDeepDoubleCvBJetTags:probHbb',
+#                        'pfMassIndependentDeepDoubleCvBJetTags:probHcc',
 #                        "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight",
 #                        "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight",
 #                        "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD",
@@ -74,5 +75,6 @@ def nanoJTB_customizeMC(process):
     run2_nanoAOD_94X2016.toModify(process, setupCustomizedJetToolbox)
     run2_nanoAOD_94XMiniAODv2.toModify(process, setupCustomizedJetToolbox)
     run2_nanoAOD_102Xv1.toModify(process, setupCustomizedJetToolbox)
+    run2_nanoAOD_106Xv2.toModify(process, setupCustomizedJetToolbox)
     process.NANOAODSIMoutput.fakeNameForCrab = cms.untracked.bool(True)  # needed for crab publication
     return process
