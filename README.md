@@ -5,13 +5,13 @@ Python framework for configuration of jet tools via the jet toolbox.
 
 ### Notice that the parameter `miniAOD=True` has changed to `dataTier=miniAOD`
 
-Check the branch for the correspondent release. This branch is for *CMSSW_10_2_X* and higher. 
+Check the branch for the correspondent release. This branch is for *CMSSW_12_0_X* and higher. 
 Then for example:
 ```
-cmsrel CMSSW_10_6_1/
-cd CMSSW_10_6_1/src/
+cmsrel CMSSW_12_0_3/
+cd CMSSW_12_0_3/src/
 git cms-init
-git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_102X_v3
+git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_120X
 scram b -j 18
 ```
 
