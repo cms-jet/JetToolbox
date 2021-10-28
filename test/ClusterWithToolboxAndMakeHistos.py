@@ -15,7 +15,7 @@ process.load("Configuration.EventContent.EventContent_cff")
 process.load('Configuration.Geometry.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.Services_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = '92X_upgrade2017_realistic_v1'
 process.GlobalTag.globaltag = '94X_mc2017_realistic_v12'
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
