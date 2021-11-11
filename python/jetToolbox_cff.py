@@ -29,7 +29,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		updateCollection='', updateCollectionSubjets='',
 		newPFCollection=False, nameNewPFCollection = '',
 		PUMethod='CHS',
-                dataTier='miniAOD',
+		useExistingWeights=False, # for puppi
+		dataTier='miniAOD',
 		runOnMC=True,
 		JETCorrPayload='', JETCorrLevels = [ 'None' ], GetJetMCFlavour=True,
 		Cut = '',
@@ -258,6 +259,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					if miniAOD:
 						puppi.vertexName = cms.InputTag('offlineSlimmedPrimaryVertices')
 						puppi.clonePackedCands = cms.bool(True)
+						puppi.useExistingWeights = useExistingWeights
 					_addProcessAndTask(proc, mod["puppi"], puppi)
 					jetSeq += getattr(proc, mod["puppi"])
 				srcForPFJets = mod["puppi"]
