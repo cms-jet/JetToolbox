@@ -52,8 +52,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		addNsubSubjets=False, subjetMaxTau=4,
 		addPUJetID=False,
 		addQGTagger=False, QGjetsLabel='chs',
-		addEnergyCorrFunc=False, ecfType = "N", ecfBeta = [1.0], ecfN3 = False,
-		addEnergyCorrFuncSubjets=False, ecfSubjetType = "N", ecfSubjetBeta = [1.0], ecfSubjetN3 = False,
+		# ecfN3 (& ecfSubjetN3) can now be used to specify any pT cut for 3-jet ECFs; legacy behavior: True -> 0, False -> 10000 (default)
+		addEnergyCorrFunc=False, ecfType = ["N"], ecfBeta = [1.0], ecfN3 = False,
+		addEnergyCorrFuncSubjets=False, ecfSubjetType = ["N"], ecfSubjetBeta = [1.0], ecfSubjetN3 = False,
 		verbosity=2, 	# 0 = no printouts, 1 = warnings only, 2 = warnings & info, 3 = warnings, info, debug
 		):
 
@@ -1222,39 +1223,65 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	#################################################################################
 	###### Energy Correlation Functions
+	# helper function to handle some particular settings
+	def getNjetsInfoECF(ecfT,cutN3):
+		if ecfT=="D":
+			results = {
+				"Njets": [2],
+				"cuts": [''],
+				"ind": ['2'],
+			}
+		else:
+			results = {
+				"Njets": [1,2,3],
+				"cuts": ['','','pt>{}'.format(cutN3)],
+				"ind": ['2','3'],
+			}
+		return results
+
 	if addEnergyCorrFunc:
 		if PUMethod!="Puppi" or (addSoftDrop==False and addSoftDropSubjets==False):
 			raise ValueError("|---- jetToolBox: addEnergyCorrFunc only supported for Puppi w/ addSoftDrop or addSoftDropSubjets")
+
+		# backward compatibility
+		if not isinstance(ecfType,list): ecfType = [ecfType]
 		if not isinstance(ecfBeta,list): ecfBeta = [ecfBeta]
+		if isinstance(ecfN3,bool):
+			if ecfN3: ecfN3 = 0
+			else: ecfN3 = 10000
+
 		from RecoJets.JetProducers.ECF_cff import ecf
 		ecfSrcs = []
 		ecfLabels = []
 		mod["PFJetsSoftDropValueMap"] = mod["PFJetsSoftDrop"]+'ValueMap'
-		for ecfB in ecfBeta:
-			ecfVar = ecfType.lower()+"b"+str(int(ecfB))
-			ecfMod = "ECF"+ecfVar
-			mod[ecfMod] = ecfVar+mod["SubstructureLabel"]+'SoftDrop'
-			ecfModSrc = ecfMod+"Src"
-			mod[ecfModSrc] = mod[ecfMod]+':ecf'+ecfType
-			ecfModLabel = ecfMod+"Label"
-			mod[ecfModLabel] = mod[ecfMod]+ecfType
-			_addProcessAndTask( proc, mod[ecfMod],
-				ecf.clone(
-					src = cms.InputTag( mod["PFJetsSoftDrop"] ),
-					cuts = cms.vstring( '', '', ('pt>10000' if not ecfN3 else '' ) ),
-					ecftype = cms.string( ecfType ),
-					alpha = cms.double( ecfB ),
-					beta = cms.double( ecfB )
+		for ecfT in ecfType:
+			for ecfB in ecfBeta:
+				ecfVar = ecfT.lower()+"b"+str(int(ecfB))
+				ecfMod = "ECF"+ecfVar
+				mod[ecfMod] = ecfVar+mod["SubstructureLabel"]+'SoftDrop'
+				ecfModSrc = ecfMod+"Src"
+				mod[ecfModSrc] = mod[ecfMod]+':ecf'+ecfT
+				ecfModLabel = ecfMod+"Label"
+				mod[ecfModLabel] = mod[ecfMod]+ecfT
+				ecfInfo = getNjetsInfoECF(ecfT,ecfN3)
+				_addProcessAndTask( proc, mod[ecfMod],
+					ecf.clone(
+						src = cms.InputTag( mod["PFJetsSoftDrop"] ),
+						cuts = ecfInfo["cuts"],
+						Njets = ecfInfo["Njets"],
+						ecftype = cms.string( ecfT ),
+						alpha = cms.double( ecfB ),
+						beta = cms.double( ecfB )
+					)
 				)
-			)
-			elemToKeep += [ 'keep *_'+mod[ecfMod]+'_*_*' ]
-			jetSeq += getattr(proc, mod[ecfMod])
-			toolsUsed.extend([mod[ecfMod]])
-			for ind in ['2','3']:
-				ecfSrcs.append(mod[ecfModSrc]+ind)
-				ecfLabels.append(mod[ecfModLabel]+ind)
-				jetv = mod["PFJetsSoftDropValueMap"]+':'+ecfLabels[-1]
-				jetVariables[jetv] = Var("userFloat('"+jetv+"')", float, doc='ECF '+ecfType+ind+'b'+str(int(ecfB)), precision=10)
+				elemToKeep += [ 'keep *_'+mod[ecfMod]+'_*_*' ]
+				jetSeq += getattr(proc, mod[ecfMod])
+				toolsUsed.extend([mod[ecfMod]])
+				for ind in ecfInfo["ind"]:
+					ecfSrcs.append(mod[ecfModSrc]+ind)
+					ecfLabels.append(mod[ecfModLabel]+ind)
+					jetv = mod["PFJetsSoftDropValueMap"]+':'+ecfLabels[-1]
+					jetVariables[jetv] = Var("userFloat('"+jetv+"')", float, doc='ECF '+ecfT+ind+'b'+str(int(ecfB)), precision=10)
 
 		getattr(proc, mod["PATJetsSoftDrop"]).userData.userFloats.src += ecfSrcs
 		mod["PFJetsSoftDropValueMap"] = mod["PFJetsSoftDrop"]+'ValueMap'
@@ -1276,29 +1303,39 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	if addEnergyCorrFuncSubjets:
 		if PUMethod!="Puppi" or addSoftDropSubjets==False:
 			raise ValueError("|---- jetToolBox: addEnergyCorrFuncSubjets only supported for Puppi w/ addSoftDropSubjets")
+
+		# backward compatibility
+		if not isinstance(ecfSubjetType,list): ecfSubjetType = [ecfSubjetType]
 		if not isinstance(ecfSubjetBeta,list): ecfSubjetBeta = [ecfSubjetBeta]
+		if isinstance(ecfSubjetN3,bool):
+			if ecfSubjetN3: ecfSubjetN3 = 0
+			else: ecfSubjetN3 = 10000
+
 		from RecoJets.JetProducers.ECF_cff import ecf
 		ecfSubjetSrcs = []
-		for ecfSubjetB in ecfSubjetBeta:
-			ecfSubjetVarBase = ecfSubjetType.lower()+"b"+str(int(ecfSubjetB))
-			ecfSubjetVar = ecfSubjetVarBase+'Subjets'
-			ecfSubjetMod = "ECF"+ecfSubjetVar
-			mod[ecfSubjetMod] = ecfSubjetVarBase+mod["SubstructureLabel"]+'SoftDropSubjets'
-			_addProcessAndTask(proc, mod[ecfSubjetMod],
-				ecf.clone(
-					src = cms.InputTag(mod["PFJetsSoftDrop"],'SubJets'),
-					cuts = cms.vstring( '', '', ('pt>10000' if not ecfSubjetN3 else '' ) ),
-					ecftype = cms.string( ecfSubjetType ),
-					alpha = cms.double( ecfSubjetB ),
-					beta = cms.double( ecfSubjetB )
+		for ecfSubjetT in ecfSubjetType:
+			for ecfSubjetB in ecfSubjetBeta:
+				ecfSubjetVarBase = ecfSubjetT.lower()+"b"+str(int(ecfSubjetB))
+				ecfSubjetVar = ecfSubjetVarBase+'Subjets'
+				ecfSubjetMod = "ECF"+ecfSubjetVar
+				mod[ecfSubjetMod] = ecfSubjetVarBase+mod["SubstructureLabel"]+'SoftDropSubjets'
+				ecfSubjetInfo = getNjetsInfoECF(ecfSubjetT,ecfSubjetN3)
+				_addProcessAndTask(proc, mod[ecfSubjetMod],
+					ecf.clone(
+						src = cms.InputTag(mod["PFJetsSoftDrop"],'SubJets'),
+						cuts = ecfSubjetInfo["cuts"],
+						Njets = ecfSubjetInfo["Njets"],
+						ecftype = cms.string( ecfSubjetT ),
+						alpha = cms.double( ecfSubjetB ),
+						beta = cms.double( ecfSubjetB )
+					)
 				)
-			)
-			elemToKeep += [ 'keep *_'+mod[ecfSubjetMod]+'_*_*' ]
-			jetSeq += getattr(proc, mod[ecfSubjetMod])
-			toolsUsed.extend([mod[ecfSubjetMod]])
-			for ind in ['2','3']:
-				ecfSubjetSrcs.append(mod[ecfSubjetMod]+':ecf'+ecfSubjetType+ind)
-				subjetVariables[ecfSubjetSrcs[-1]] = Var("userFloat('"+ecfSubjetSrcs[-1]+"')", float, doc='ECF '+ecfType+ind+'b'+str(int(ecfSubjetB)), precision=10)
+				elemToKeep += [ 'keep *_'+mod[ecfSubjetMod]+'_*_*' ]
+				jetSeq += getattr(proc, mod[ecfSubjetMod])
+				toolsUsed.extend([mod[ecfSubjetMod]])
+				for ind in ecfSubjetInfo["ind"]:
+					ecfSubjetSrcs.append(mod[ecfSubjetMod]+':ecf'+ecfSubjetT+ind)
+					subjetVariables[ecfSubjetSrcs[-1]] = Var("userFloat('"+ecfSubjetSrcs[-1]+"')", float, doc='ECF '+ecfSubjetT+ind+'b'+str(int(ecfSubjetB)), precision=10)
 
 		# set up user floats
 		getattr(proc, mod["PATSubjetsSoftDrop"]).userData.userFloats.src += ecfSubjetSrcs
