@@ -24,6 +24,7 @@ from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection, updateJetColl
 from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask, addToProcessAndTask
 from PhysicsTools.NanoAOD.common_cff import *
 from collections import OrderedDict
+from copy import deepcopy
 
 def jetToolbox( proc, jetType, jetSequence, outputFile,
 		updateCollection='', updateCollectionSubjets='',
@@ -120,6 +121,46 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		else: subJETCorrLevels = [ 'L2Relative', 'L3Absolute']
 		if runOnData: subJETCorrLevels.append('L2L3Residual')
 	#################################################################################
+
+	#################################################################################
+	####### Helper function for dealing with addJetCollection vs. updateJetCollection for btagging
+	def addJetCollectionSmart(proc, **kwargs):
+		# there are probably some other conditions where this should be used
+		hasDeepDoubleB = "btagDiscriminators" in kwargs and any("DeepDouble" in x for x in kwargs["btagDiscriminators"])
+		patJetsFinal = ""
+		addTagInfos = False
+		tagInfoSources = None
+		if "addTagInfos" in kwargs:
+			addTagInfos = kwargs["addTagInfos"]
+			kwargs.pop("addTagInfos",None)
+		if "tagInfoSources" in kwargs:
+			tagInfoSources = kwargs["tagInfoSources"]
+			kwargs.pop("tagInfoSources",None)
+		if hasDeepDoubleB:
+			# "clone and rename" based on applyDeepBtagging_cff
+			kwargsOrig = deepcopy(kwargs)
+			kwargs["btagDiscriminators"] = [x for x in kwargsOrig["btagDiscriminators"] if "DeepDouble" not in x]
+			kwargs["postfix"] = kwargsOrig["postfix"] + "NoDeep"
+			addJetCollection(proc, **kwargs)
+			patJetsFinal = patJets+kwargs["labelName"]+kwargs["postfix"]
+#			kwargsOrig["jetSource"] = cms.InputTag(selPatJets+kwargs["labelName"]+kwargs["postfix"])
+			kwargsOrig["jetSource"] = cms.InputTag(patJets+kwargs["labelName"]+kwargs["postfix"])
+			kwargsOrig["btagDiscriminators"] = [x for x in kwargsOrig["btagDiscriminators"] if "DeepDouble" in x]
+			unneeded = ["getJetMCFlavour","genJetCollection","genParticles","outputModules"]
+			for v in unneeded:
+				kwargsOrig.pop(v,None)
+			updateJetCollection(proc, **kwargsOrig)
+#			patJetsFinal.append(selPatJets+kwargsOrig["labelName"]+kwargsOrig["postfix"])
+		else:
+			# pass through
+			addJetCollection(proc, **kwargs)
+			patJetsFinal = patJets+kwargs["labelName"]+kwargs["postfix"]
+
+		# common modification
+		if addTagInfos:
+			getattr(proc, patJetsFinal).addTagInfos = cms.bool(True)
+			if tagInfoSources:
+				getattr(proc, patJetsFinal).tagInfoSources = tagInfoSources
 
 	#################################################################################
 	####### Setting b-tag discriminators
@@ -396,7 +437,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		else: _addProcessAndTask( proc, mod["PFJetsConstituents"], cms.EDProducer("PFJetConstituentSelector", src = cms.InputTag( mod["PFJets"] ), cut = cms.string( Cut ) ))
 		jetSeq += getattr(proc, mod["PFJetsConstituents"])
 
-		addJetCollection(
+		patJets = 'patJets'
+		patSubJets = ''
+		selPatJets = 'selectedPatJets'
+		addJetCollectionSmart(
 				proc,
 				labelName = mod["PATJetsLabel"],
 				jetSource = cms.InputTag(mod["PFJets"]),
@@ -414,14 +458,11 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				btagInfos = bTagInfos,
 				getJetMCFlavour = GetJetMCFlavour,
 				genParticles = cms.InputTag(genParticlesLabel),
-				outputModules = ['outputFile']
+				outputModules = ['outputFile'],
+				addTagInfos = True,
 				)
-		patJets = 'patJets'
-		patSubJets = ''
-		selPatJets = 'selectedPatJets'
 		mod["PATJets"] = patJets+mod["PATJetsLabelPost"]
 		mod["selPATJets"] = selPatJets+mod["PATJetsLabelPost"]
-		getattr(proc, mod["PATJets"]).addTagInfos = cms.bool(True)
 
 		if 'CS' in PUMethod: getattr( proc, mod["PATJets"] ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
 		#########################################################################
@@ -560,7 +601,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			#### Creatig a PATJetCollection with softdrop jets
 			mod["PATJetsSoftDropLabel"] = mod["PATJetsLabelPost"]+'SoftDrop'
-			addJetCollection(
+			addJetCollectionSmart(
 					proc,
 					labelName = mod["PATJetsSoftDropLabel"],
 					jetSource = cms.InputTag( mod["PFJetsSoftDrop"]),
@@ -581,7 +622,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			##### Creating the softdrop subjet PATJetCollection
 			mod["PATSubjetsSoftDropLabel"] = mod["PATJetsSoftDropLabel"]+'Subjets'
-			addJetCollection(
+			addJetCollectionSmart(
 					proc,
 					labelName = mod["PATSubjetsSoftDropLabel"],
 					jetSource = cms.InputTag( mod["PFJetsSoftDrop"], 'SubJets'),
@@ -694,7 +735,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			#### Creatig a PATJetCollection with pruning jets
 			mod["PATJetsPrunedLabel"] = mod["PATJetsLabelPost"]+'Pruned'
-			addJetCollection(
+			addJetCollectionSmart(
 					proc,
 					labelName = mod["PATJetsPrunedLabel"],
 					jetSource = cms.InputTag( mod["PFJetsPruned"]),
@@ -715,7 +756,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 			##### Creating the pruning subjet PATJetCollection
 			mod["PATSubjetsPrunedLabel"] = mod["PATJetsPrunedLabel"]+'Subjets'
-			addJetCollection(
+			addJetCollectionSmart(
 					proc,
 					labelName = mod["PATSubjetsPrunedLabel"],
 					jetSource = cms.InputTag( mod["PFJetsPruned"], 'SubJets'),
@@ -878,7 +919,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 						)
 					)
 			mod["PATJetsCMSTopTagLabel"] = 'CMSTopTag'+PUMethod+postFix
-			addJetCollection(
+			addJetCollectionSmart(
 					proc,
 					labelName = mod["PATJetsCMSTopTagLabel"],
 					jetSource = cms.InputTag(mod["PFJetsCMSTopTag"]),
@@ -892,16 +933,16 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 					btagInfos = bTagInfos,
 					genJetCollection = cms.InputTag(mod["GenJetsNoNu"]),
 					getJetMCFlavour = False, # jet flavor should always be disabled for groomed jets
-					genParticles = cms.InputTag(genParticlesLabel)
+					genParticles = cms.InputTag(genParticlesLabel),
+					addTagInfos = True,
+					tagInfoSources = cms.VInputTag( cms.InputTag(mod["CATopTagInfos"])),
 					)
 			mod["PATJetsCMSTopTag"] = patJets+mod["PATJetsCMSTopTagLabel"]
 			mod["selPATJetsCMSTopTag"] = selPatJets+mod["PATJetsCMSTopTagLabel"]
-			getattr(proc,mod["PATJetsCMSTopTag"]).addTagInfos = True
-			getattr(proc,mod["PATJetsCMSTopTag"]).tagInfoSources = cms.VInputTag( cms.InputTag(mod["CATopTagInfos"]))
 			_addProcessAndTask( proc, mod["selPATJetsCMSTopTag"], selectedPatJets.clone( src = mod["PATJetsCMSTopTag"], cut = Cut ) )
 
 			mod["PATSubjetsCMSTopTagLabel"] = mod["PATJetsCMSTopTagLabel"]+'Subjets'
-			addJetCollection(
+			addJetCollectionSmart(
 					proc,
 					labelName = mod["PATSubjetsCMSTopTagLabel"],
 					jetSource = cms.InputTag(mod["PFJetsCMSTopTag"], 'SubJets'),
@@ -1013,7 +1054,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 
                 mod["PATJetsHEPTopTagLabel"] = 'HEPTopTag'+PUMethod+postFix
-                addJetCollection(
+                addJetCollectionSmart(
                                 proc,
                                 labelName = mod["PATJetsHEPTopTagLabel"],
                                 jetSource = cms.InputTag(mod["PFJetsHEPTopTag"]),
@@ -1027,19 +1068,19 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                                 btagInfos = bTagInfos,
                                 genJetCollection = cms.InputTag(mod["GenJetsNoNu"]),
                                 getJetMCFlavour = False, # jet flavor should always be disabled for groomed jets
-                                genParticles = cms.InputTag(genParticlesLabel)
+                                genParticles = cms.InputTag(genParticlesLabel),
+								addTagInfos = True,
+								tagInfoSources = cms.VInputTag( cms.InputTag(mod["PFJetsHEPTopTag"])),
                                 )
                 mod["PATJetsHEPTopTag"] = patJets+mod["PATJetsHEPTopTagLabel"]
                 mod["selPATJetsHEPTopTag"] = selPatJets+mod["PATJetsHEPTopTagLabel"]
-                getattr(proc,mod["PATJetsHEPTopTag"]).addTagInfos = True
-                getattr(proc,mod["PATJetsHEPTopTag"]).tagInfoSources = cms.VInputTag( cms.InputTag(mod["PFJetsHEPTopTag"]))
                 _addProcessAndTask( proc, mod["selPATJetsHEPTopTag"],
                         selectedPatJets.clone( src = mod["PATJetsHEPTopTag"], cut = Cut ) )
 		jetSeq += getattr(proc, mod["selPATJetsHEPTopTag"])
 		elemToKeep += [ 'keep *_'+mod["selPATJetsHEPTopTag"]+'_*_*' ]
 
                 mod["PATSubjetsHEPTopTagLabel"] = mod["PATJetsHEPTopTagLabel"]+'Subjets'
-                addJetCollection(
+                addJetCollectionSmart(
                                 proc,
                                 labelName = mod["PATSubjetsHEPTopTagLabel"],
                                 jetSource = cms.InputTag(mod["PFJetsHEPTopTag"], 'SubJets'),
