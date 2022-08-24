@@ -127,7 +127,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 	def addJetCollectionSmart(proc, **kwargs):
 		# there are probably some other conditions where this should be used
 		hasDeepDoubleB = "btagDiscriminators" in kwargs and any("DeepDouble" in x for x in kwargs["btagDiscriminators"])
-		patJetsFinal = ""
+		patJetsInterim = ""
+		if "postfix" not in kwargs:
+			kwargs["postfix"] = ""
 		addTagInfos = False
 		tagInfoSources = None
 		if "addTagInfos" in kwargs:
@@ -142,25 +144,36 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			kwargs["btagDiscriminators"] = [x for x in kwargsOrig["btagDiscriminators"] if "DeepDouble" not in x]
 			kwargs["postfix"] = kwargsOrig["postfix"] + "NoDeep"
 			addJetCollection(proc, **kwargs)
-			patJetsFinal = patJets+kwargs["labelName"]+kwargs["postfix"]
+			patJetsInterim = patJets+kwargs["labelName"]+kwargs["postfix"]
 #			kwargsOrig["jetSource"] = cms.InputTag(selPatJets+kwargs["labelName"]+kwargs["postfix"])
-			kwargsOrig["jetSource"] = cms.InputTag(patJets+kwargs["labelName"]+kwargs["postfix"])
+			kwargsOrig["jetSource"] = cms.InputTag(patJetsInterim)
 			kwargsOrig["btagDiscriminators"] = [x for x in kwargsOrig["btagDiscriminators"] if "DeepDouble" in x]
 			unneeded = ["getJetMCFlavour","genJetCollection","genParticles","outputModules"]
 			for v in unneeded:
 				kwargsOrig.pop(v,None)
 			updateJetCollection(proc, **kwargsOrig)
-#			patJetsFinal.append(selPatJets+kwargsOrig["labelName"]+kwargsOrig["postfix"])
+			patJetsFinal = patJets+kwargsOrig["labelName"]+kwargsOrig["postfix"]
+			patJetsUpdated = 'updated'+patJetsFinal[:1].upper()+patJetsFinal[1:]
+			selPatJetsFinal = selPatJets+kwargsOrig["labelName"]+kwargsOrig["postfix"]
+			selPatJetsUpdated = selPatJetsFinal.replace("selected","selectedUpdated")
+#			print proc.dumpPython()
+			# fix names
+			def swap_module(proc, new, old):
+				_addProcessAndTask(proc, new, getattr(proc, old).clone())
+				delattr(proc, old)
+				setattr(proc, old, cms.EDAlias( **{new : cms.VPSet(cms.PSet(type = cms.string('patJets')))} ))
+			swap_module(proc, patJetsFinal, patJetsUpdated)
+			swap_module(proc, selPatJetsFinal, selPatJetsUpdated)
 		else:
 			# pass through
 			addJetCollection(proc, **kwargs)
-			patJetsFinal = patJets+kwargs["labelName"]+kwargs["postfix"]
+			patJetsInterim = patJets+kwargs["labelName"]+kwargs["postfix"]
 
 		# common modification
 		if addTagInfos:
-			getattr(proc, patJetsFinal).addTagInfos = cms.bool(True)
+			getattr(proc, patJetsInterim).addTagInfos = cms.bool(True)
 			if tagInfoSources:
-				getattr(proc, patJetsFinal).tagInfoSources = tagInfoSources
+				getattr(proc, patJetsInterim).tagInfoSources = tagInfoSources
 
 	#################################################################################
 	####### Setting b-tag discriminators

@@ -150,15 +150,6 @@ jetToolbox( process, 'ca8', 'ca8JetSubs', 'noOutput',
 
 # KT R=0.8 jets from CHS
 jetToolbox( process, 'kt8', 'kt8JetSubs', 'noOutput',
-  Cut="pt>170 && abs(eta)<2.5",
-  dataTier="miniAOD",
-  PUMethod='CHS',
-  addPruning=True, addSoftDrop=True ,           # add basic grooming
-  JETCorrPayload = 'AK8PFchs', JETCorrLevels = ['L2Relative', 'L3Absolute']
-)
-
-# KT R=0.8 jets from CHS
-jetToolbox( process, 'kt8', 'kt8JetSubs', 'noOutput',
   dataTier="miniAOD",
   Cut="pt>170 && abs(eta)<2.5",
   PUMethod='CHS',
