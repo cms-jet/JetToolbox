@@ -164,10 +164,15 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				setattr(proc, old, cms.EDAlias( **{new : cms.VPSet(cms.PSet(type = cms.string('patJets')))} ))
 			swap_module(proc, patJetsFinal, patJetsUpdated)
 			swap_module(proc, selPatJetsFinal, selPatJetsUpdated)
+			# to keep userfloat keys consistent
+			if "PATJets" not in mod:
+				mod["PATJetsFirst"] = patJetsInterim
 		else:
 			# pass through
 			addJetCollection(proc, **kwargs)
 			patJetsInterim = patJets+kwargs["labelName"]+kwargs["postfix"]
+			if "PATJets" not in mod:
+				mod["PATJetsFirst"] = patJetsInterim
 
 		# common modification
 		if addTagInfos:
@@ -477,7 +482,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		mod["PATJets"] = patJets+mod["PATJetsLabelPost"]
 		mod["selPATJets"] = selPatJets+mod["PATJetsLabelPost"]
 
-		if 'CS' in PUMethod: getattr( proc, mod["PATJets"] ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
+		if 'CS' in PUMethod: getattr( proc, mod["PATJetsFirst"] ).getJetMCFlavour = False  # CS jets cannot be re-clustered from their constituents
 		#########################################################################
 
 	####### update jets from existing collection
@@ -585,7 +590,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		jetSeq += getattr(proc, mod["SoftDropMass"] )
 
 		#### Adding softdrop mass as userFloat
-		getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["SoftDropMass"] ]
+		getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [ mod["SoftDropMass"] ]
 		jetVariables['softdropMass'] = Var("userFloat('"+mod["SoftDropMass"]+"')", float, doc='Softdrop mass', precision=10)
 		toolsUsed.append( mod["SoftDropMass"] )
 		#########################################################################
@@ -723,7 +728,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		jetSeq += getattr(proc, mod["PrunedMass"])
 
 		#### Adding softdrop mass as userFloat
-		getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["PrunedMass"] ]
+		getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [ mod["PrunedMass"] ]
 		jetVariables['prunedMass'] = Var("userFloat('"+mod["PrunedMass"]+"')", float, doc='Pruned mass', precision=10)
 		elemToKeep += [ 'keep *_'+mod["PrunedMass"]+'_*_*']
 		toolsUsed.append( mod["PrunedMass"] )
@@ -849,7 +854,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		elemToKeep += [ 'keep *_'+mod["TrimmedMass"]+'_*_*']
 		jetSeq += getattr(proc, mod["PFJetsTrimmed"])
 		jetSeq += getattr(proc, mod["TrimmedMass"])
-		getattr( proc, mod["PATJets"]).userData.userFloats.src += [mod["TrimmedMass"]]
+		getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [mod["TrimmedMass"]]
 		jetVariables['trimmedMass'] = Var("userFloat('"+mod["TrimmedMass"]+"')", float, doc='Trimmed mass', precision=10)
 		toolsUsed.append( mod["TrimmedMass"] )
 	#################################################################################
@@ -876,7 +881,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 		elemToKeep += [ 'keep *_'+mod["FilteredMass"]+'_*_*']
 		jetSeq += getattr(proc, mod["PFJetsFiltered"])
 		jetSeq += getattr(proc, mod["FilteredMass"])
-		getattr( proc, patJets+jetALGO+'PF'+PUMethod+postFix).userData.userFloats.src += [mod["FilteredMass"]]
+		getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [mod["FilteredMass"]]
 		jetVariables['filteredMass'] = Var("userFloat('"+mod["FilteredMass"]+"')", float, doc='Filtered mass', precision=10)
 		toolsUsed.append( mod["FilteredMass"] )
 	#################################################################################
@@ -1012,7 +1017,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 			_addProcessAndTask( proc, mod["MassDropFilteredMass"], ak8PFJetsCHSPrunedMass.clone( src = cms.InputTag( mod["PFJets"]),
 				matched = cms.InputTag(mod["PFJetsMassDrop"]), distMax = cms.double( jetSize ) ) )
 			elemToKeep += [ 'keep *_'+mod["MassDropFilteredMass"]+'_*_*' ]
-			getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["MassDropFilteredMass"] ]
+			getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [ mod["MassDropFilteredMass"] ]
 		        jetVariables['massDropFilteredMass'] = Var("userFloat('"+mod["MassDropFilteredMass"]+"')", float, doc='MassDropFiltered mass', precision=10)
 			jetSeq += getattr(proc, mod["PFJetsMassDrop"])
 			jetSeq += getattr(proc, mod["MassDropFilteredMass"])
@@ -1059,8 +1064,8 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
                             #valueLabels = cms.vstring(["mass","fRec"])
                             ) )
 		elemToKeep += [ 'keep *_'+mod["PFJetsHEPTopTagMass"]+'_*_*' ]
-                getattr( proc, mod["PATJets"] ).userData.userFloats.src += [ mod["PFJetsHEPTopTagMass"] ]
-                #getattr( proc, mod["PATJets"] ).userData.userFloats.src += [ "fRec" ]
+                getattr( proc, mod["PATJetsFirst"] ).userData.userFloats.src += [ mod["PFJetsHEPTopTagMass"] ]
+                #getattr( proc, mod["PATJetsFirst"] ).userData.userFloats.src += [ "fRec" ]
 		jetVariables['HEPTopTagMass'] = Var("userFloat('"+mod["PFJetsHEPTopTagMass"]+"')", float, doc='HEPTopTagMass', precision=10)
 		jetSeq += getattr(proc, mod["PFJetsHEPTopTagMass"])
 		toolsUsed.append( mod["PFJetsHEPTopTagMass"] )
@@ -1153,7 +1158,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 		elemToKeep += [ 'keep *_'+mod["Njettiness"]+'_*_*' ]
 		for tau in rangeTau:
-                    getattr( proc, mod["PATJets"]).userData.userFloats.src += [mod["Njettiness"]+':tau'+str(tau) ]
+                    getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [mod["Njettiness"]+':tau'+str(tau) ]
 		    jetVariables[mod["Njettiness"]+':tau'+str(tau)] = Var("userFloat('"+mod["Njettiness"]+':tau'+str(tau)+"')", float, doc='Nsubjetiness tau'+str(tau), precision=10)
 		jetSeq += getattr(proc, mod["Njettiness"])
 		toolsUsed.append( mod["Njettiness"] )
@@ -1220,10 +1225,10 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 						)
 					)
 			elemToKeep += [ 'keep *_'+mod["QGTagger"]+'_*_*' ]
-			getattr( proc, mod["PATJets"]).userData.userFloats.src += [mod["QGTagger"]+':qgLikelihood']
-			#getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["QGTagger"]+':axis2']
-			#getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["QGTagger"]+':mult']
-			#getattr( proc, mod["PATJets"]).userData.userFloats.src += [ mod["QGTagger"]+':ptD']
+			getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [mod["QGTagger"]+':qgLikelihood']
+			#getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [ mod["QGTagger"]+':axis2']
+			#getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [ mod["QGTagger"]+':mult']
+			#getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [ mod["QGTagger"]+':ptD']
 		        jetVariables[mod["QGTagger"]+':qgLikelihood'] = Var("userFloat('"+mod["QGTagger"]+':qgLikelihood'+"')", float, doc='Quark/Gluon likelihood', precision=10)
                         #jetVariables[mod["QGTagger"]+':axis2'] = Var("userFloat('"+mod["QGTagger"]+':axis2'+"')", float, doc='QGL variable: minor axis of jet ellipse', precision=10)
                         #jetVariables[mod["QGTagger"]+':mult'] = Var("userFloat('"+mod["QGTagger"]+':mult'+"')", float, doc='QGL variable: jet constituent multiplicity', precision=10)
@@ -1263,9 +1268,9 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 						)
 					)
 
-			getattr( proc, mod["PATJets"]).userData.userFloats.src += [mod["PUJetIDEval"]+':fullDiscriminant']
+			getattr( proc, mod["PATJetsFirst"]).userData.userFloats.src += [mod["PUJetIDEval"]+':fullDiscriminant']
 		        jetVariables[mod["PUJetIDEval"]+':fullDiscriminant'] = Var("userFloat('"+mod["PUJetIDEval"]+':fullDiscriminant'+"')", float, doc='PUJetID fulldiscriminant', precision=10)
-			getattr( proc, mod["PATJets"]).userData.userInts.src += [mod["PUJetIDEval"]+':cutbasedId',mod["PUJetIDEval"]+':fullId']
+			getattr( proc, mod["PATJetsFirst"]).userData.userInts.src += [mod["PUJetIDEval"]+':cutbasedId',mod["PUJetIDEval"]+':fullId']
 		        jetVariables[mod["PUJetIDEval"]+':cutbasedId'] = Var("userInt('"+mod["PUJetIDEval"]+':cutbasedId'+"')", int, doc='PUJetID cutbased Id', precision=10)
 		        jetVariables[mod["PUJetIDEval"]+':fullId'] = Var("userInt('"+mod["PUJetIDEval"]+':fullId'+"')", int, doc='PUJetID full Id', precision=10)
 			elemToKeep += ['keep *_'+mod["PUJetIDEval"]+'_*_*']
@@ -1348,7 +1353,7 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 				valueLabels = cms.vstring(ecfLabels),
 			)
 		)
-		getattr(proc, mod["PATJets"]).userData.userFloats.src += [mod["PFJetsSoftDropValueMap"]+':'+ecfLabel for ecfLabel in ecfLabels]
+		getattr(proc, mod["PATJetsFirst"]).userData.userFloats.src += [mod["PFJetsSoftDropValueMap"]+':'+ecfLabel for ecfLabel in ecfLabels]
 	#################################################################################
 
 
