@@ -146,22 +146,22 @@ def jetToolbox( proc, jetType, jetSequence, outputFile,
 
 	defaultBoostedBTagDiscriminators = [
                         'pfBoostedDoubleSecondaryVertexAK8BJetTags',
-                        'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
-                        'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
-                        'pfMassIndependentDeepDoubleCvLJetTags:probQCD',
-                        'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
-                        'pfMassIndependentDeepDoubleCvBJetTags:probHbb',
-                        'pfMassIndependentDeepDoubleCvBJetTags:probHcc',
-                        ]
+	]
 
 	if updateCollection and (jetALGO=='AK8'):
 		defaultBoostedBTagDiscriminators += [
-			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight",
-			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight",
-			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD",
-			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD",
-			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD",
-			"pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD"
+            "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight",
+            "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight",
+            "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD",
+            "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD",
+            "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD",
+            "pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD",
+            'pfMassIndependentDeepDoubleBvLJetTags:probQCD',
+            'pfMassIndependentDeepDoubleBvLJetTags:probHbb',
+            'pfMassIndependentDeepDoubleCvLJetTags:probQCD',
+            'pfMassIndependentDeepDoubleCvLJetTags:probHcc',
+            'pfMassIndependentDeepDoubleCvBJetTags:probHbb',
+            'pfMassIndependentDeepDoubleCvBJetTags:probHcc',
 		]
 
 	if bTagDiscriminators is '':
